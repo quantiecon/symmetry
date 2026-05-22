@@ -7,5 +7,6 @@
 # Rojo-generated sourcemap
 sourcemap.json
 
-# Aftman project-local bin shims
+# Rokit/Aftman project-local bin shims
+.rokit/
 .aftman/bin/
