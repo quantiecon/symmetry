@@ -1,0 +1,11 @@
+# Roblox place/model binaries (not source — use Rojo to build these)
+*.rbxl
+*.rbxlx
+*.rbxm
+*.rbxmx
+
+# Rojo-generated sourcemap
+sourcemap.json
+
+# Aftman project-local bin shims
+.aftman/bin/
