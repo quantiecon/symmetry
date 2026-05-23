@@ -15,7 +15,7 @@ end)
 -- Temporary keyboard trigger (Spacebar) until the roll button UI is built
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
-    if input.KeyCode == Enum.KeyCode.Space then
+    if input.KeyCode == Enum.KeyCode.R then
         Remotes.RollAura:FireServer()
     end
 end)
