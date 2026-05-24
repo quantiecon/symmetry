@@ -1,5 +1,5 @@
 {
-  "name": "AuraRNG",
+  "name": "Veldmere",
   "tree": {
     "$className": "DataModel",
 
@@ -10,12 +10,16 @@
       },
       "Remotes": {
         "$className": "Folder",
-        "RollAura": {
-          "$className": "RemoteEvent"
-        },
-        "AuraResult": {
-          "$className": "RemoteEvent"
-        }
+        "SetTarget":       { "$className": "RemoteEvent" },
+        "TargetConfirmed": { "$className": "RemoteEvent" },
+        "TargetCleared":   { "$className": "RemoteEvent" },
+        "OnHit":           { "$className": "RemoteEvent" },
+        "CrackWindow":     { "$className": "RemoteEvent" },
+        "CrackClosed":     { "$className": "RemoteEvent" },
+        "CrackHit":        { "$className": "RemoteEvent" },
+        "NodeDepleted":    { "$className": "RemoteEvent" },
+        "NodeHit":         { "$className": "RemoteEvent" },
+        "OnYield":         { "$className": "RemoteEvent" }
       }
     },
 
