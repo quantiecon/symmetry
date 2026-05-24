@@ -30,7 +30,7 @@ local function makePart(size, pos, color, material)
 	p.Size     = size
 	p.Position = pos
 	p.Anchored = true
-	p.Material = material or Enum.Material.SmoothRock
+	p.Material = material or Enum.Material.Slate
 	p.Color    = color
 	p.Parent   = zoneFolder
 	return p
@@ -95,7 +95,7 @@ local function CreateNode(basePos, rarity)
 	main.Size        = Vector3.new(5, 5.5, 5)
 	main.Position    = basePos + Vector3.new(0, 2.75, 0)
 	main.Anchored    = true
-	main.Material    = Enum.Material.SmoothRock
+	main.Material    = Enum.Material.Slate
 	main.Color       = rarity.color
 	main.Parent      = model
 
