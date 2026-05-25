@@ -15,7 +15,7 @@ local HIT_INTERVAL_AUTO   = 1.5   -- auto-targeted (no click)
 local HIT_INTERVAL_MANUAL = 1.0   -- manually clicked (50% faster)
 local UNIVERSAL_COOLDOWN  = 0.75  -- min time between any damage for one player
 local CRACK_DURATION      = 2.5
-local TARGET_RANGE        = 20
+local TARGET_RANGE        = 35
 
 local nodeHP        = {}
 local nodeCracks    = {}
