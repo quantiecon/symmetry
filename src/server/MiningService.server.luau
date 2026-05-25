@@ -15,7 +15,7 @@ local HIT_INTERVAL_AUTO   = 1.5   -- auto-targeted (no click)
 local HIT_INTERVAL_MANUAL = 1.0   -- manually clicked (50% faster)
 local UNIVERSAL_COOLDOWN  = 0.75  -- min time between any damage for one player
 local CRACK_DURATION      = 2.5
-local TARGET_RANGE        = 55
+local TARGET_RANGE        = 20
 
 local nodeHP        = {}
 local nodeCracks    = {}
@@ -205,7 +205,7 @@ local function SpawnAllNodes()
 end
 
 local function FindClosestNode(position)
-	local closest, closestDist = nil, math.huge
+	local closest, closestDist = nil, TARGET_RANGE
 	for _, child in zoneFolder:GetChildren() do
 		if child:IsA("Model") and child:GetAttribute("Active") then
 			local main = child:FindFirstChild("Main")
