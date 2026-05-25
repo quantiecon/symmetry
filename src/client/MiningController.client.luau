@@ -11,10 +11,12 @@ local Remotes   = ReplicatedStorage:WaitForChild("Remotes")
 local character = player.Character or player.CharacterAdded:Wait()
 local rootPart  = character:WaitForChild("HumanoidRootPart")
 
-local currentTarget = nil
-local crackActive   = {}   -- [node] = SelectionBox (stays until node depleted)
-local isFlying      = false
-local orbitAngle    = 0
+local currentTarget    = nil
+local crackActive      = {}   -- [node] = { sel, light, bb }
+local crackHoverActive = false
+local isFlying         = false
+local flyCount         = 0
+local orbitAngle       = 0
 
 local ORBIT_RADIUS = 3.2
 local ORBIT_SPEED  = 2.2
@@ -38,6 +40,16 @@ glow.Color           = Color3.fromRGB(140, 200, 255)
 glow.Parent          = pickaxe
 
 RunService.RenderStepped:Connect(function(dt)
+	-- During crack window: lerp pickaxe toward hovering position near node
+	if crackHoverActive and currentTarget and currentTarget.Parent then
+		local main = currentTarget:FindFirstChild("Main")
+		if main then
+			local hoverCF = CFrame.new(main.Position + Vector3.new(0, 3.5, -4))
+				* CFrame.Angles(math.pi / 4, 0, 0)
+			pickaxe.CFrame = pickaxe.CFrame:Lerp(hoverCF, math.min(1, dt * 9))
+		end
+		return
+	end
 	if isFlying then return end
 	orbitAngle += ORBIT_SPEED * dt
 	local p = rootPart.Position
@@ -48,72 +60,110 @@ RunService.RenderStepped:Connect(function(dt)
 	) * CFrame.Angles(0, -orbitAngle, math.pi / 4)
 end)
 
-local function FlyTo(targetPart)
-	if isFlying then return end
+-- FlyTo: flyCount lets the latest call always win; no call is skipped
+local function FlyTo(targetPart, grandSlam)
+	if not targetPart or not targetPart.Parent then return end
+	crackHoverActive = false
+	flyCount += 1
+	local myCount = flyCount
 	isFlying = true
-	local dest = targetPart.Position + Vector3.new(0, 0.5, 0)
 
-	TweenService:Create(pickaxe, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-		CFrame = CFrame.new(dest) * CFrame.Angles(math.pi / 2, 0, 0),
-	}):Play()
-	task.wait(0.27)
-
-	local home = rootPart.Position + Vector3.new(
-		math.cos(orbitAngle) * ORBIT_RADIUS,
-		ORBIT_HEIGHT,
-		math.sin(orbitAngle) * ORBIT_RADIUS
-	)
-	TweenService:Create(pickaxe, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
-		CFrame = CFrame.new(home),
-	}):Play()
-	task.wait(0.18)
-	isFlying = false
+	if grandSlam then
+		-- Rise behind the node, then slam into it
+		local riseCF = CFrame.new(targetPart.Position + Vector3.new(0, 5.5, -3))
+			* CFrame.Angles(math.pi / 3, 0, 0)
+		TweenService:Create(pickaxe, TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			CFrame = riseCF,
+		}):Play()
+		task.delay(0.14, function()
+			if flyCount ~= myCount then return end
+			local slamCF = CFrame.new(targetPart.Position + Vector3.new(0, 0.2, 0))
+				* CFrame.Angles(math.pi / 2, 0, 0)
+			TweenService:Create(pickaxe, TweenInfo.new(0.09, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+				CFrame = slamCF,
+			}):Play()
+			task.delay(0.12, function()
+				if flyCount == myCount then isFlying = false end
+			end)
+		end)
+	else
+		-- Quick dart to node and return to orbit
+		local dest = targetPart.Position + Vector3.new(0, 0.5, 0)
+		TweenService:Create(pickaxe, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			CFrame = CFrame.new(dest) * CFrame.Angles(math.pi / 2, 0, 0),
+		}):Play()
+		task.delay(0.28, function()
+			if flyCount == myCount then isFlying = false end
+		end)
+	end
 end
 
--- Show crack visual — stays on node until it's depleted
+-- Show crack visual — persists on node until depleted
 local function ShowCrack(node)
 	local main = node:FindFirstChild("Main")
 	if not main then return end
 
-	-- Only create SelectionBox once per node
 	if not crackActive[node] then
-		local sel                 = Instance.new("SelectionBox")
-		sel.Adornee               = main
-		sel.Color3                = Color3.fromRGB(255, 215, 0)
-		sel.LineThickness         = 0.07
-		sel.SurfaceTransparency   = 0.6
-		sel.Parent                = main
-		crackActive[node]         = sel
+		local sel               = Instance.new("SelectionBox")
+		sel.Adornee             = main
+		sel.Color3              = Color3.fromRGB(255, 215, 0)
+		sel.LineThickness       = 0.12
+		sel.SurfaceTransparency = 0.5
+		sel.Parent              = main
 
-		-- Pulse loop (runs until node depleted)
+		local light             = Instance.new("PointLight")
+		light.Range             = 20
+		light.Brightness        = 2.5
+		light.Color             = Color3.fromRGB(255, 200, 0)
+		light.Parent            = main
+
+		local bb                = Instance.new("BillboardGui")
+		bb.Size                 = UDim2.new(0, 56, 0, 56)
+		bb.StudsOffset          = Vector3.new(0, 5.5, 0)
+		bb.AlwaysOnTop          = false
+		bb.Parent               = main
+
+		local lbl               = Instance.new("TextLabel")
+		lbl.Size                = UDim2.new(1, 0, 1, 0)
+		lbl.BackgroundTransparency = 1
+		lbl.TextColor3          = Color3.fromRGB(255, 230, 40)
+		lbl.Text                = "⚡"
+		lbl.Font                = Enum.Font.GothamBold
+		lbl.TextScaled          = true
+		lbl.TextStrokeTransparency = 0.2
+		lbl.Parent              = bb
+
+		local entry = { sel = sel, light = light, bb = bb, lbl = lbl }
+		crackActive[node] = entry
+
+		-- Pulse loop until node depleted
 		task.spawn(function()
-			while sel.Parent and crackActive[node] do
-				TweenService:Create(sel, TweenInfo.new(0.4), { SurfaceTransparency = 0.15 }):Play()
-				task.wait(0.4)
-				TweenService:Create(sel, TweenInfo.new(0.4), { SurfaceTransparency = 0.6 }):Play()
-				task.wait(0.4)
+			while crackActive[node] == entry and sel.Parent do
+				TweenService:Create(sel, TweenInfo.new(0.35), { SurfaceTransparency = 0.08 }):Play()
+				TweenService:Create(lbl, TweenInfo.new(0.35), { TextTransparency = 0 }):Play()
+				task.wait(0.35)
+				TweenService:Create(sel, TweenInfo.new(0.35), { SurfaceTransparency = 0.55 }):Play()
+				TweenService:Create(lbl, TweenInfo.new(0.35), { TextTransparency = 0.5 }):Play()
+				task.wait(0.35)
 			end
 		end)
 	end
 
-	-- Brief white flash on the cube surface
+	-- Brief white flash
 	local origColor = main.Color
 	main.Color = Color3.fromRGB(255, 255, 255)
 	task.delay(0.15, function()
 		if main.Parent then main.Color = origColor end
 	end)
-
-	-- Screen hint
-	if node == currentTarget then
-		crackHint.Visible = true
-	end
 end
 
 local function RemoveCrackVisual(node)
-	local sel = crackActive[node]
-	if sel then
+	local entry = crackActive[node]
+	if entry then
 		crackActive[node] = nil
-		if sel.Parent then sel:Destroy() end
+		if entry.sel   and entry.sel.Parent   then entry.sel:Destroy()   end
+		if entry.light and entry.light.Parent then entry.light:Destroy() end
+		if entry.bb    and entry.bb.Parent    then entry.bb:Destroy()    end
 	end
 end
 
@@ -160,7 +210,7 @@ crackHint.Size         = UDim2.new(0, 340, 0, 32)
 crackHint.Position     = UDim2.new(0.5, -170, 1, -96)
 crackHint.BackgroundTransparency = 1
 crackHint.TextColor3   = Color3.fromRGB(255, 215, 0)
-crackHint.Text         = "⚡ A weak spot emerged!"
+crackHint.Text         = "⚡ Click to shatter!"
 crackHint.Font         = Enum.Font.GothamBold
 crackHint.TextSize     = 18
 crackHint.Visible      = false
@@ -188,7 +238,7 @@ local function YieldPop(amount, targetPart)
 	task.delay(1.2, function() bb:Destroy() end)
 end
 
--- Click: only sets target or triggers crack bonus
+-- Click: set target OR trigger crack grand slam
 UserInputService.InputBegan:Connect(function(input, processed)
 	if processed then return end
 	if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
@@ -198,21 +248,24 @@ UserInputService.InputBegan:Connect(function(input, processed)
 	local node = hit.Parent
 	if not node or not node:GetAttribute("Active") then return end
 
-	-- Crack bonus click
+	-- Crack grand slam: fire server + play slam animation
 	if crackActive[node] and node == currentTarget then
 		Remotes.CrackHit:FireServer(node)
+		local main = node:FindFirstChild("Main")
+		if main then task.spawn(FlyTo, main, true) end
 		return
 	end
 
-	-- Set manual target
-	Remotes.SetTarget:FireServer(node)
+	-- Set manual target (clicking again on already-targeted node is a no-op)
+	if node ~= currentTarget then
+		Remotes.SetTarget:FireServer(node)
+	end
 end)
 
 Remotes.TargetConfirmed.OnClientEvent:Connect(function(node)
 	currentTarget  = node
 	local rarity   = node:GetAttribute("Rarity") or "Node"
-	hintLabel.Text = "Mining: " .. rarity .. (playerManual and " (focused)" or "")
-	-- Show crack hint if this node already has a crack active
+	hintLabel.Text = "Mining: " .. rarity
 	if crackActive[node] then
 		crackHint.Visible = true
 	end
@@ -220,26 +273,30 @@ end)
 
 Remotes.TargetCleared.OnClientEvent:Connect(function()
 	currentTarget      = nil
+	crackHoverActive   = false
 	hintLabel.Text     = "Auto-mining nearby node"
 	crackHint.Visible  = false
 end)
 
+-- Normal auto-hit animation; skip dart if pickaxe is hovering for crack
 Remotes.OnHit.OnClientEvent:Connect(function(node)
 	local main = node and node:FindFirstChild("Main")
 	if not main then return end
-	task.spawn(FlyTo, main)
+	if crackHoverActive and node == currentTarget then return end
+	task.spawn(FlyTo, main, false)
 end)
 
 Remotes.CrackWindow.OnClientEvent:Connect(function(node)
 	ShowCrack(node)
 	if node == currentTarget then
-		crackHint.Visible = true
+		crackHint.Visible  = true
+		crackHoverActive   = true
 	end
 end)
 
--- Crack window closed server-side — hide hint but keep visual on cube
 Remotes.CrackClosed.OnClientEvent:Connect(function(node)
 	if node == currentTarget then
+		crackHoverActive  = false
 		crackHint.Visible = false
 	end
 end)
@@ -248,6 +305,7 @@ Remotes.NodeDepleted.OnClientEvent:Connect(function(node)
 	RemoveCrackVisual(node)
 	if node == currentTarget then
 		currentTarget      = nil
+		crackHoverActive   = false
 		hintLabel.Text     = "Auto-mining nearby node"
 		crackHint.Visible  = false
 	end

@@ -45,16 +45,6 @@ local function BuildCavern()
 
 	makePart(Vector3.new(ZONE_SIZE, 2, ZONE_SIZE), Vector3.new(0, -1, 0), floor, Enum.Material.Slate)
 
-	local spawnLoc          = Instance.new("SpawnLocation")
-	spawnLoc.Size           = Vector3.new(6, 1, 6)
-	spawnLoc.Position       = Vector3.new(0, 0.5, 0)
-	spawnLoc.Anchored       = true
-	spawnLoc.Neutral        = true
-	spawnLoc.Duration       = 0
-	spawnLoc.Material       = Enum.Material.Slate
-	spawnLoc.Color          = floor
-	spawnLoc.Parent         = zoneFolder
-
 	makePart(Vector3.new(ZONE_SIZE, 2, ZONE_SIZE), Vector3.new(0, ZONE_HEIGHT + 1, 0), rock)
 	makePart(Vector3.new(ZONE_SIZE, ZONE_HEIGHT, 2), Vector3.new(0, ZONE_HEIGHT/2, -half), rock)
 	makePart(Vector3.new(ZONE_SIZE, ZONE_HEIGHT, 2), Vector3.new(0, ZONE_HEIGHT/2,  half), rock)
@@ -321,22 +311,38 @@ RunService.Heartbeat:Connect(function()
 		local hrp = char:FindFirstChild("HumanoidRootPart")
 		if not hrp then continue end
 
-		-- Invalidate stale target
 		local target = playerTargets[player]
+
+		-- Invalidate stale/dead target
 		if target and (not target.Parent or not target:GetAttribute("Active")) then
 			playerTargets[player] = nil
 			playerManual[player]  = false
-			target                = nil
+			Remotes.TargetCleared:FireClient(player)
+			target = nil
 		end
 
-		-- Auto-target closest node if no target
-		if not target then
-			local closest = FindClosestNode(hrp.Position)
-			if closest then
-				playerTargets[player] = closest
+		-- Invalidate manual target if out of range
+		if target and playerManual[player] then
+			local main = target:FindFirstChild("Main")
+			if main and (hrp.Position - main.Position).Magnitude > TARGET_RANGE then
+				playerTargets[player] = nil
 				playerManual[player]  = false
-				Remotes.TargetConfirmed:FireClient(player, closest)
+				Remotes.TargetCleared:FireClient(player)
+				target = nil
+			end
+		end
+
+		-- Auto mode: always use closest node (rechecks every frame)
+		if not playerManual[player] then
+			local closest = FindClosestNode(hrp.Position)
+			if closest ~= target then
 				target = closest
+				playerTargets[player] = closest
+				if closest then
+					Remotes.TargetConfirmed:FireClient(player, closest)
+				else
+					Remotes.TargetCleared:FireClient(player)
+				end
 			end
 		end
 
