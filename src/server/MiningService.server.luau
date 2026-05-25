@@ -47,7 +47,16 @@ local function BuildCavern()
 
 	makePart(Vector3.new(ZONE_SIZE, 2, ZONE_SIZE), Vector3.new(0, ZONE_HEIGHT + 1, 0), rock)
 	makePart(Vector3.new(ZONE_SIZE, ZONE_HEIGHT, 2), Vector3.new(0, ZONE_HEIGHT/2, -half), rock)
-	makePart(Vector3.new(ZONE_SIZE, ZONE_HEIGHT, 2), Vector3.new(0, ZONE_HEIGHT/2,  half), rock)
+	-- North wall (toward town): split to leave a 13-stud wide × 12-stud tall passage
+	local gapW  = 13
+	local sideW = (ZONE_SIZE - gapW) / 2   -- 53.5
+	makePart(Vector3.new(sideW, ZONE_HEIGHT, 2), Vector3.new(-(gapW/2 + sideW/2), ZONE_HEIGHT/2, half), rock)
+	makePart(Vector3.new(sideW, ZONE_HEIGHT, 2), Vector3.new( (gapW/2 + sideW/2), ZONE_HEIGHT/2, half), rock)
+	makePart(Vector3.new(gapW, ZONE_HEIGHT - 12, 2), Vector3.new(0, 12 + (ZONE_HEIGHT - 12)/2, half), rock)
+	-- Short tunnel section inside mine matching the external corridor
+	makePart(Vector3.new(gapW, 3, 5), Vector3.new(0, 13.5, half - 2.5), rock)
+	makePart(Vector3.new(2, 12, 5),   Vector3.new(-gapW/2 - 1, 6, half - 2.5), rock)
+	makePart(Vector3.new(2, 12, 5),   Vector3.new( gapW/2 + 1, 6, half - 2.5), rock)
 	makePart(Vector3.new(2, ZONE_HEIGHT, ZONE_SIZE), Vector3.new(-half, ZONE_HEIGHT/2, 0),  rock)
 	makePart(Vector3.new(2, ZONE_HEIGHT, ZONE_SIZE), Vector3.new( half, ZONE_HEIGHT/2, 0),  rock)
 
