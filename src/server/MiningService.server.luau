@@ -91,11 +91,10 @@ local function CreateNode(basePos, rarity)
 
 	local main       = Instance.new("Part")
 	main.Name        = "Main"
-	main.Shape       = Enum.PartType.Ball
-	main.Size        = Vector3.new(5, 5.5, 5)
+	main.Size        = Vector3.new(5, 5, 5)
 	main.Position    = basePos + Vector3.new(0, 4, 0)
 	main.Anchored    = true
-	main.Material    = Enum.Material.Slate
+	main.Material    = Enum.Material.Neon
 	main.Color       = rarity.color
 	main.Parent      = model
 
