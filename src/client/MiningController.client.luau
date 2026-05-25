@@ -140,9 +140,7 @@ UserInputService.InputBegan:Connect(function(input, processed)
 	if not hit then return end
 	local node = hit.Parent
 	if not node or not node:GetAttribute("Active") then return end
-	if node ~= currentTarget then
-		Remotes.SetTarget:FireServer(node)
-	end
+	Remotes.SetTarget:FireServer(node)
 end)
 
 Remotes.TargetConfirmed.OnClientEvent:Connect(function(node)
