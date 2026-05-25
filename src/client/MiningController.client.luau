@@ -12,7 +12,12 @@ local character = player.Character or player.CharacterAdded:Wait()
 local rootPart  = character:WaitForChild("HumanoidRootPart")
 local humanoid  = character:WaitForChild("Humanoid")
 
-humanoid.AutoRotate = false   -- we handle facing manually
+-- Waist joint: upper body twists independently of leg direction
+local lowerTorso  = character:WaitForChild("LowerTorso")
+local waistJoint  = lowerTorso:WaitForChild("Waist")        -- Motor6D
+local waistC0Base = waistJoint.C0                           -- resting offset (read once)
+
+humanoid.AutoRotate = false   -- we control leg facing manually
 
 local currentTarget    = nil
 local orbitAngle       = 0
@@ -60,22 +65,40 @@ RunService.RenderStepped:Connect(function(dt)
 	pickaxe.CFrame = pickaxe.CFrame:Lerp(targetCF, math.min(1, dt * 14))
 end)
 
--- Character body faces active target; falls back to movement direction
+-- Character facing + waist twist toward active target
+local waistTwist = 0   -- current smoothed waist angle (radians, relative to HRP)
+
 RunService.Heartbeat:Connect(function(dt)
-	local dir
+	-- 1. Legs / HRP face movement direction (or hold still)
+	local moveDir = humanoid.MoveDirection * Vector3.new(1, 0, 1)
+	if moveDir.Magnitude > 0.1 then
+		local goalCF = CFrame.new(rootPart.Position, rootPart.Position + moveDir)
+		rootPart.CFrame = rootPart.CFrame:Lerp(goalCF, math.min(1, dt * 10))
+	end
+
+	-- 2. Upper body (waist) independently twists toward the target
+	local targetTwist = 0
 	if currentTarget then
 		local main = currentTarget:FindFirstChild("Main")
 		if main and main.Parent then
-			dir = (main.Position - rootPart.Position) * Vector3.new(1, 0, 1)
+			-- Flat direction from character to node
+			local toTarget = (main.Position - rootPart.Position) * Vector3.new(1, 0, 1)
+			if toTarget.Magnitude > 0.5 then
+				-- How far left/right is the target relative to HRP's current facing?
+				-- cross.Y > 0 = target is to the right; < 0 = to the left
+				local facing = rootPart.CFrame.LookVector
+				local cross   = facing:Cross(toTarget.Unit)
+				local dot     = facing:Dot(toTarget.Unit)
+				local angle   = math.atan2(cross.Y, dot)
+				-- Cap twist so the waist doesn't wrench past ~70°
+				targetTwist = math.clamp(angle, -math.rad(70), math.rad(70))
+			end
 		end
 	end
-	if not dir or dir.Magnitude < 0.5 then
-		dir = humanoid.MoveDirection * Vector3.new(1, 0, 1)
-	end
-	if dir.Magnitude > 0.1 then
-		local goalCF = CFrame.new(rootPart.Position, rootPart.Position + dir)
-		rootPart.CFrame = rootPart.CFrame:Lerp(goalCF, math.min(1, dt * 10))
-	end
+
+	-- Smooth the twist so it doesn't snap
+	waistTwist += (targetTwist - waistTwist) * math.min(1, dt * 9)
+	waistJoint.C0 = waistC0Base * CFrame.Angles(0, waistTwist, 0)
 end)
 
 -- Dart to node on each hit; latest call wins, older ones just expire
