@@ -125,14 +125,6 @@ local function CreateNode(basePos, rarity)
 	mesh.MeshType    = Enum.MeshType.Sphere
 	mesh.Parent      = main
 
-	-- Permanent black edge outline
-	local outline              = Instance.new("SelectionBox")
-	outline.Adornee            = main
-	outline.Color3             = Color3.fromRGB(0, 0, 0)
-	outline.LineThickness      = 0.04
-	outline.SurfaceTransparency = 1
-	outline.Parent             = model
-
 	local bb         = Instance.new("BillboardGui")
 	bb.Size          = UDim2.new(0, 90, 0, 22)
 	bb.StudsOffset   = Vector3.new(0, bSize.Y / 2 + 1.5, 0)

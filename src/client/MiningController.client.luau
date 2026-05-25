@@ -8,19 +8,30 @@ local player  = Players.LocalPlayer
 local mouse   = player:GetMouse()
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 
+-- Character refs — refreshed on every respawn via rebindCharacter()
+local rootPart, humanoid, lowerTorso, waistJoint, waistC0Base
+
+local function rebindCharacter(char)
+	rootPart     = char:WaitForChild("HumanoidRootPart")
+	humanoid     = char:WaitForChild("Humanoid")
+	lowerTorso   = char:WaitForChild("LowerTorso")
+	waistJoint   = lowerTorso:WaitForChild("Waist")
+	waistC0Base  = waistJoint.C0
+	humanoid.AutoRotate = false
+end
+
 local character = player.Character or player.CharacterAdded:Wait()
-local rootPart  = character:WaitForChild("HumanoidRootPart")
-local humanoid  = character:WaitForChild("Humanoid")
-
--- Waist joint: upper body twists independently of leg direction
-local lowerTorso  = character:WaitForChild("LowerTorso")
-local waistJoint  = lowerTorso:WaitForChild("Waist")        -- Motor6D
-local waistC0Base = waistJoint.C0                           -- resting offset (read once)
-
-humanoid.AutoRotate = false   -- we control leg facing manually
+rebindCharacter(character)
 
 local currentTarget    = nil
 local orbitAngle       = 0
+local waistTwist       = 0
+
+player.CharacterAdded:Connect(function(newChar)
+	rebindCharacter(newChar)
+	currentTarget = nil   -- clear stale target on respawn
+	waistTwist    = 0
+end)
 
 -- pickaxeTargetCF: non-nil while flying to a node; nil resumes orbit
 local pickaxeTargetCF  = nil
@@ -49,6 +60,7 @@ glow.Parent      = pickaxe
 
 -- All pickaxe movement goes through here — lerp handles every transition smoothly
 RunService.RenderStepped:Connect(function(dt)
+	if not rootPart or not rootPart.Parent then return end
 	local targetCF
 	if pickaxeTargetCF then
 		targetCF = pickaxeTargetCF
@@ -66,9 +78,10 @@ RunService.RenderStepped:Connect(function(dt)
 end)
 
 -- Character facing + waist twist toward active target
-local waistTwist = 0   -- current smoothed waist angle (radians, relative to HRP)
-
 RunService.Heartbeat:Connect(function(dt)
+	if not rootPart or not rootPart.Parent then return end
+	if not humanoid or not humanoid.Parent then return end
+
 	-- 1. Legs / HRP face movement direction (or hold still)
 	local moveDir = humanoid.MoveDirection * Vector3.new(1, 0, 1)
 	if moveDir.Magnitude > 0.1 then
@@ -81,24 +94,21 @@ RunService.Heartbeat:Connect(function(dt)
 	if currentTarget then
 		local main = currentTarget:FindFirstChild("Main")
 		if main and main.Parent then
-			-- Flat direction from character to node
 			local toTarget = (main.Position - rootPart.Position) * Vector3.new(1, 0, 1)
 			if toTarget.Magnitude > 0.5 then
-				-- How far left/right is the target relative to HRP's current facing?
-				-- cross.Y > 0 = target is to the right; < 0 = to the left
 				local facing = rootPart.CFrame.LookVector
 				local cross   = facing:Cross(toTarget.Unit)
 				local dot     = facing:Dot(toTarget.Unit)
 				local angle   = math.atan2(cross.Y, dot)
-				-- Cap twist so the waist doesn't wrench past ~70°
 				targetTwist = math.clamp(angle, -math.rad(70), math.rad(70))
 			end
 		end
 	end
 
-	-- Smooth the twist so it doesn't snap
 	waistTwist += (targetTwist - waistTwist) * math.min(1, dt * 9)
-	waistJoint.C0 = waistC0Base * CFrame.Angles(0, waistTwist, 0)
+	if waistJoint and waistJoint.Parent then
+		waistJoint.C0 = waistC0Base * CFrame.Angles(0, waistTwist, 0)
+	end
 end)
 
 -- Dart to node on each hit; latest call wins, older ones just expire
