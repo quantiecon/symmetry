@@ -88,18 +88,33 @@ local function BuildCavern()
 	end
 end
 
+-- Five boulder shapes — same rough volume, varied silhouette
+local BOULDER_VARIANTS = {
+	Vector3.new(5,  10, 5),   -- upright column
+	Vector3.new(7,   9, 6),   -- wide squat mass
+	Vector3.new(4,  12, 4),   -- tall spire
+	Vector3.new(6,  10, 7),   -- chunky asymmetric
+	Vector3.new(5,  11, 6),   -- slightly leaning oval
+}
+
 local function CreateNode(basePos, rarity)
 	local model      = Instance.new("Model")
 	model.Name       = "Node_" .. rarity.name
 
+	local bSize      = BOULDER_VARIANTS[math.random(1, #BOULDER_VARIANTS)]
+
 	local main       = Instance.new("Part")
 	main.Name        = "Main"
-	main.Size        = Vector3.new(5, 5, 5)
-	main.Position    = basePos + Vector3.new(0, 4, 0)
+	main.Size        = bSize
+	main.Position    = basePos + Vector3.new(0, bSize.Y / 2, 0)
 	main.Anchored    = true
 	main.Material    = Enum.Material.Neon
 	main.Color       = rarity.color
 	main.Parent      = model
+
+	local mesh       = Instance.new("SpecialMesh")
+	mesh.MeshType    = Enum.MeshType.Sphere
+	mesh.Parent      = main
 
 	-- Permanent black edge outline
 	local outline              = Instance.new("SelectionBox")
@@ -111,7 +126,7 @@ local function CreateNode(basePos, rarity)
 
 	local bb         = Instance.new("BillboardGui")
 	bb.Size          = UDim2.new(0, 90, 0, 22)
-	bb.StudsOffset   = Vector3.new(0, 4, 0)
+	bb.StudsOffset   = Vector3.new(0, bSize.Y / 2 + 1.5, 0)
 	bb.AlwaysOnTop   = false
 	bb.Parent        = main
 
