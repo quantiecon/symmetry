@@ -93,7 +93,7 @@ local function CreateNode(basePos, rarity)
 	main.Name        = "Main"
 	main.Shape       = Enum.PartType.Ball
 	main.Size        = Vector3.new(5, 5.5, 5)
-	main.Position    = basePos + Vector3.new(0, 2.75, 0)
+	main.Position    = basePos + Vector3.new(0, 4, 0)
 	main.Anchored    = true
 	main.Material    = Enum.Material.Slate
 	main.Color       = rarity.color
