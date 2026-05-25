@@ -117,7 +117,7 @@ local function CreateNode(basePos, rarity)
 	main.Size        = bSize
 	main.Position    = basePos + Vector3.new(0, bSize.Y / 2, 0)
 	main.Anchored    = true
-	main.Material    = Enum.Material.Neon
+	main.Material    = Enum.Material.SmoothPlastic
 	main.Color       = rarity.color
 	main.Parent      = model
 
