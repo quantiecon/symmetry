@@ -5,34 +5,36 @@ local RunService        = game:GetService("RunService")
 local NodeData = require(ReplicatedStorage.Shared.NodeData)
 local Remotes  = ReplicatedStorage.Remotes
 
-local ZONE_SIZE     = 120
-local ZONE_HEIGHT   = 28
-local NODE_AREA     = 75
-local NODE_COUNT    = 11
-local NODE_MIN_DIST = 13
-local RESPAWN_TIME  = 30
-local HIT_INTERVAL  = 1.5
-local CRACK_DURATION = 2.5
-local TARGET_RANGE  = 55
+local ZONE_SIZE           = 120
+local ZONE_HEIGHT         = 28
+local NODE_AREA           = 75
+local NODE_COUNT          = 11
+local NODE_MIN_DIST       = 13
+local RESPAWN_TIME        = 30
+local HIT_INTERVAL_AUTO   = 1.5   -- auto-targeted (no click)
+local HIT_INTERVAL_MANUAL = 1.0   -- manually clicked (50% faster)
+local UNIVERSAL_COOLDOWN  = 0.75  -- min time between any damage for one player
+local CRACK_DURATION      = 2.5
+local TARGET_RANGE        = 55
 
 local nodeHP        = {}
 local nodeCracks    = {}
 local playerTargets = {}
 local playerLastHit = {}
-local playerOre     = {}
+local playerManual  = {}
 
-local zoneFolder = Instance.new("Folder")
-zoneFolder.Name  = "Zone1"
-zoneFolder.Parent = workspace
+local zoneFolder    = Instance.new("Folder")
+zoneFolder.Name     = "Zone1"
+zoneFolder.Parent   = workspace
 
 local function makePart(size, pos, color, material)
-	local p = Instance.new("Part")
-	p.Size     = size
-	p.Position = pos
-	p.Anchored = true
-	p.Material = material or Enum.Material.Slate
-	p.Color    = color
-	p.Parent   = zoneFolder
+	local p        = Instance.new("Part")
+	p.Size         = size
+	p.Position     = pos
+	p.Anchored     = true
+	p.Material     = material or Enum.Material.Slate
+	p.Color        = color
+	p.Parent       = zoneFolder
 	return p
 end
 
@@ -41,29 +43,30 @@ local function BuildCavern()
 	local floor = Color3.fromRGB(85, 78, 70)
 	local half  = ZONE_SIZE / 2
 
-	makePart(Vector3.new(ZONE_SIZE, 2, ZONE_SIZE), Vector3.new(0, -1, 0),              floor, Enum.Material.Slate)
+	makePart(Vector3.new(ZONE_SIZE, 2, ZONE_SIZE), Vector3.new(0, -1, 0), floor, Enum.Material.Slate)
 
-	local spawnLoc = Instance.new("SpawnLocation")
-	spawnLoc.Size = Vector3.new(6, 1, 6)
-	spawnLoc.Position = Vector3.new(0, 0.5, 0)
-	spawnLoc.Anchored = true
-	spawnLoc.Neutral = true
-	spawnLoc.Duration = 0
-	spawnLoc.Material = Enum.Material.Slate
-	spawnLoc.Color = floor
-	spawnLoc.Parent = zoneFolder
+	local spawnLoc          = Instance.new("SpawnLocation")
+	spawnLoc.Size           = Vector3.new(6, 1, 6)
+	spawnLoc.Position       = Vector3.new(0, 0.5, 0)
+	spawnLoc.Anchored       = true
+	spawnLoc.Neutral        = true
+	spawnLoc.Duration       = 0
+	spawnLoc.Material       = Enum.Material.Slate
+	spawnLoc.Color          = floor
+	spawnLoc.Parent         = zoneFolder
+
 	makePart(Vector3.new(ZONE_SIZE, 2, ZONE_SIZE), Vector3.new(0, ZONE_HEIGHT + 1, 0), rock)
-	makePart(Vector3.new(ZONE_SIZE, ZONE_HEIGHT, 2), Vector3.new(0,  ZONE_HEIGHT/2, -half), rock)
-	makePart(Vector3.new(ZONE_SIZE, ZONE_HEIGHT, 2), Vector3.new(0,  ZONE_HEIGHT/2,  half), rock)
+	makePart(Vector3.new(ZONE_SIZE, ZONE_HEIGHT, 2), Vector3.new(0, ZONE_HEIGHT/2, -half), rock)
+	makePart(Vector3.new(ZONE_SIZE, ZONE_HEIGHT, 2), Vector3.new(0, ZONE_HEIGHT/2,  half), rock)
 	makePart(Vector3.new(2, ZONE_HEIGHT, ZONE_SIZE), Vector3.new(-half, ZONE_HEIGHT/2, 0),  rock)
 	makePart(Vector3.new(2, ZONE_HEIGHT, ZONE_SIZE), Vector3.new( half, ZONE_HEIGHT/2, 0),  rock)
 
 	for i = 1, 18 do
 		local angle  = (i / 18) * math.pi * 2
 		local radius = half - 8 - math.random() * 8
-		local x = math.cos(angle) * radius + (math.random() - 0.5) * 8
-		local z = math.sin(angle) * radius + (math.random() - 0.5) * 8
-		local sy = math.random(3, 8)
+		local x      = math.cos(angle) * radius + (math.random() - 0.5) * 8
+		local z      = math.sin(angle) * radius + (math.random() - 0.5) * 8
+		local sy     = math.random(3, 8)
 		local boulder = makePart(
 			Vector3.new(math.random(4, 9), sy, math.random(4, 9)),
 			Vector3.new(x, sy / 2, z),
@@ -71,7 +74,7 @@ local function BuildCavern()
 		)
 		boulder.Shape = Enum.PartType.Ball
 		if math.random() < 0.25 then
-			local pl = Instance.new("PointLight")
+			local pl      = Instance.new("PointLight")
 			pl.Range      = 20
 			pl.Brightness = 0.5
 			pl.Color      = Color3.fromRGB(100, 160, 220)
@@ -80,18 +83,18 @@ local function BuildCavern()
 	end
 
 	for _ = 1, 8 do
-		local lp = Instance.new("Part")
-		lp.Size        = Vector3.new(0.3, 0.3, 0.3)
-		lp.Position    = Vector3.new((math.random() - 0.5) * 90, ZONE_HEIGHT - 1, (math.random() - 0.5) * 90)
-		lp.Anchored    = true
-		lp.Transparency = 1
-		lp.CanCollide  = false
-		lp.Parent      = zoneFolder
-		local pl = Instance.new("PointLight")
-		pl.Range      = 35
-		pl.Brightness = 0.6
-		pl.Color      = Color3.fromRGB(110, 170, 230)
-		pl.Parent     = lp
+		local lp         = Instance.new("Part")
+		lp.Size          = Vector3.new(0.3, 0.3, 0.3)
+		lp.Position      = Vector3.new((math.random() - 0.5) * 90, ZONE_HEIGHT - 1, (math.random() - 0.5) * 90)
+		lp.Anchored      = true
+		lp.Transparency  = 1
+		lp.CanCollide    = false
+		lp.Parent        = zoneFolder
+		local pl         = Instance.new("PointLight")
+		pl.Range         = 35
+		pl.Brightness    = 0.6
+		pl.Color         = Color3.fromRGB(110, 170, 230)
+		pl.Parent        = lp
 	end
 end
 
@@ -108,9 +111,17 @@ local function CreateNode(basePos, rarity)
 	main.Color       = rarity.color
 	main.Parent      = model
 
+	-- Permanent black edge outline
+	local outline              = Instance.new("SelectionBox")
+	outline.Adornee            = main
+	outline.Color3             = Color3.fromRGB(0, 0, 0)
+	outline.LineThickness      = 0.04
+	outline.SurfaceTransparency = 1
+	outline.Parent             = model
+
 	local bb         = Instance.new("BillboardGui")
 	bb.Size          = UDim2.new(0, 90, 0, 22)
-	bb.StudsOffset   = Vector3.new(0, 4.5, 0)
+	bb.StudsOffset   = Vector3.new(0, 4, 0)
 	bb.AlwaysOnTop   = false
 	bb.Parent        = main
 
@@ -203,9 +214,26 @@ local function SpawnAllNodes()
 	end
 end
 
+local function FindClosestNode(position)
+	local closest, closestDist = nil, math.huge
+	for _, child in zoneFolder:GetChildren() do
+		if child:IsA("Model") and child:GetAttribute("Active") then
+			local main = child:FindFirstChild("Main")
+			if main then
+				local dist = (position - main.Position).Magnitude
+				if dist < closestDist then
+					closestDist = dist
+					closest = child
+				end
+			end
+		end
+	end
+	return closest
+end
+
 local function ProcessHit(player, node, isCrackHit)
 	if not node or not node.Parent then return end
-	local hp    = nodeHP[node]
+	local hp = nodeHP[node]
 	if not hp then return end
 
 	local rarity = NodeData.RarityMap[node:GetAttribute("Rarity")]
@@ -218,12 +246,14 @@ local function ProcessHit(player, node, isCrackHit)
 		Remotes.CrackClosed:FireAllClients(node)
 	end
 
-	playerOre[player] = (playerOre[player] or 0) + yield
-	Remotes.OnYield:FireClient(player, yield, playerOre[player])
+	local playerOre = (player:GetAttribute("Ore") or 0) + yield
+	player:SetAttribute("Ore", playerOre)
+	Remotes.OnYield:FireClient(player, yield, playerOre)
 
 	hp -= 1
 	nodeHP[node] = hp
 
+	-- Check crack thresholds
 	if crack and not crack.open and #crack.thresholds > 0 and hp <= crack.thresholds[1] then
 		table.remove(crack.thresholds, 1)
 		crack.open     = true
@@ -242,50 +272,88 @@ local function ProcessHit(player, node, isCrackHit)
 		nodeHP[node]     = nil
 		nodeCracks[node] = nil
 		node:SetAttribute("Active", false)
+
+		-- Immediately disable hitbox and hide visuals
+		local main = node:FindFirstChild("Main")
+		if main then
+			main.CanCollide  = false
+			main.Transparency = 1
+			local bb = main:FindFirstChildWhichIsA("BillboardGui")
+			if bb then bb.Enabled = false end
+		end
+
+		-- Notify clients
 		Remotes.NodeDepleted:FireAllClients(node)
 
+		-- Clear targeting
 		for p, t in playerTargets do
 			if t == node then
 				playerTargets[p] = nil
-				Remotes.TargetCleared:FireClient(p)
+				playerManual[p]  = false
 			end
 		end
 
-		local basePos   = Vector3.new(node:GetAttribute("BaseX"), 0, node:GetAttribute("BaseZ"))
+		local basePos    = Vector3.new(node:GetAttribute("BaseX"), 0, node:GetAttribute("BaseZ"))
 		local nextRarity = NodeData.RollRarity()
 
-		task.delay(1, function()
-			local main = node:FindFirstChild("Main")
-			if main then main.Transparency = 1 end
-		end)
-		task.delay(RESPAWN_TIME, function()
+		-- Destroy cleanly after clients have processed NodeDepleted
+		task.delay(0.5, function()
 			if node.Parent then node:Destroy() end
+		end)
+
+		task.delay(RESPAWN_TIME, function()
 			CreateNode(basePos, nextRarity)
 		end)
 	else
 		local ratio = hp / node:GetAttribute("MaxHP")
-		node.Main.Transparency = (1 - ratio) * 0.35
+		node.Main.Transparency = (1 - ratio) * 0.25
 		Remotes.NodeHit:FireAllClients(node, ratio)
 	end
 end
 
+-- Main heartbeat: auto-targeting + hit loop
 RunService.Heartbeat:Connect(function()
 	local now = os.clock()
-	for player, node in playerTargets do
-		if not node or not node.Parent or not node:GetAttribute("Active") then
+
+	for _, player in Players:GetPlayers() do
+		local char = player.Character
+		if not char then continue end
+		local hrp = char:FindFirstChild("HumanoidRootPart")
+		if not hrp then continue end
+
+		-- Invalidate stale target
+		local target = playerTargets[player]
+		if target and (not target.Parent or not target:GetAttribute("Active")) then
 			playerTargets[player] = nil
-			Remotes.TargetCleared:FireClient(player)
-			continue
+			playerManual[player]  = false
+			target                = nil
 		end
-		local last = playerLastHit[player] or 0
-		if now - last >= HIT_INTERVAL then
+
+		-- Auto-target closest node if no target
+		if not target then
+			local closest = FindClosestNode(hrp.Position)
+			if closest then
+				playerTargets[player] = closest
+				playerManual[player]  = false
+				Remotes.TargetConfirmed:FireClient(player, closest)
+				target = closest
+			end
+		end
+
+		if not target then continue end
+
+		local interval = playerManual[player] and HIT_INTERVAL_MANUAL or HIT_INTERVAL_AUTO
+		local last     = playerLastHit[player] or 0
+
+		if now - last >= interval then
 			playerLastHit[player] = now
-			Remotes.OnHit:FireClient(player, node)
-			ProcessHit(player, node, false)
+			Remotes.OnHit:FireClient(player, target)
+			ProcessHit(player, target, false)
 		end
 	end
 end)
 
+-- Player manually clicks a node to target it
 Remotes.SetTarget.OnServerEvent:Connect(function(player, node)
 	if typeof(node) ~= "Instance" or not node:IsA("Model") then return end
 	if not node:GetAttribute("Active") then return end
@@ -299,23 +367,30 @@ Remotes.SetTarget.OnServerEvent:Connect(function(player, node)
 	if (hrp.Position - main.Position).Magnitude > TARGET_RANGE then return end
 
 	playerTargets[player] = node
-	playerLastHit[player] = os.clock() - HIT_INTERVAL
+	playerManual[player]  = true
+	-- Don't reset playerLastHit — no instant hit on target switch
 	Remotes.TargetConfirmed:FireClient(player, node)
 end)
 
+-- Crack bonus hit
 Remotes.CrackHit.OnServerEvent:Connect(function(player, node)
 	if typeof(node) ~= "Instance" then return end
 	if playerTargets[player] ~= node then return end
 	local crack = nodeCracks[node]
 	if not crack or not crack.open then return end
 	if os.clock() - crack.openedAt > CRACK_DURATION then return end
+
+	local now = os.clock()
+	if now - (playerLastHit[player] or 0) < UNIVERSAL_COOLDOWN then return end
+
+	playerLastHit[player] = now
 	ProcessHit(player, node, true)
 end)
 
 Players.PlayerRemoving:Connect(function(player)
 	playerTargets[player] = nil
 	playerLastHit[player] = nil
-	playerOre[player]     = nil
+	playerManual[player]  = nil
 end)
 
 BuildCavern()
