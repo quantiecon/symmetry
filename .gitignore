@@ -3,6 +3,8 @@
 *.rbxlx
 *.rbxm
 *.rbxmx
+# Exception: animation assets checked into source
+!src/shared/Animations/*.rbxm
 
 # Rojo-generated sourcemap
 sourcemap.json
