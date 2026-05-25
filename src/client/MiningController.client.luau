@@ -10,6 +10,9 @@ local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 
 local character = player.Character or player.CharacterAdded:Wait()
 local rootPart  = character:WaitForChild("HumanoidRootPart")
+local humanoid  = character:WaitForChild("Humanoid")
+
+humanoid.AutoRotate = false   -- we handle facing manually
 
 local currentTarget    = nil
 local orbitAngle       = 0
@@ -55,6 +58,24 @@ RunService.RenderStepped:Connect(function(dt)
 	end
 	-- Lerp gives smooth dart-out and smooth return — no teleporting
 	pickaxe.CFrame = pickaxe.CFrame:Lerp(targetCF, math.min(1, dt * 14))
+end)
+
+-- Character body faces active target; falls back to movement direction
+RunService.Heartbeat:Connect(function(dt)
+	local dir
+	if currentTarget then
+		local main = currentTarget:FindFirstChild("Main")
+		if main and main.Parent then
+			dir = (main.Position - rootPart.Position) * Vector3.new(1, 0, 1)
+		end
+	end
+	if not dir or dir.Magnitude < 0.5 then
+		dir = humanoid.MoveDirection * Vector3.new(1, 0, 1)
+	end
+	if dir.Magnitude > 0.1 then
+		local goalCF = CFrame.new(rootPart.Position, rootPart.Position + dir)
+		rootPart.CFrame = rootPart.CFrame:Lerp(goalCF, math.min(1, dt * 10))
+	end
 end)
 
 -- Dart to node on each hit; latest call wins, older ones just expire
