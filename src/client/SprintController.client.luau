@@ -3,7 +3,7 @@ local UserInputService = game:GetService("UserInputService")
 
 local player       = Players.LocalPlayer
 local BASE_SPEED   = 16
-local SPRINT_SPEED = BASE_SPEED * 1.8  -- 21.6
+local SPRINT_SPEED = BASE_SPEED * 1.6  -- 21.6
 
 local function humanoid()
 	local char = player.Character
