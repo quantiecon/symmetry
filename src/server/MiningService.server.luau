@@ -42,6 +42,16 @@ local function BuildCavern()
 	local half  = ZONE_SIZE / 2
 
 	makePart(Vector3.new(ZONE_SIZE, 2, ZONE_SIZE), Vector3.new(0, -1, 0),              floor, Enum.Material.Slate)
+
+	local spawnLoc = Instance.new("SpawnLocation")
+	spawnLoc.Size = Vector3.new(6, 1, 6)
+	spawnLoc.Position = Vector3.new(0, 0.5, 0)
+	spawnLoc.Anchored = true
+	spawnLoc.Neutral = true
+	spawnLoc.Duration = 0
+	spawnLoc.Material = Enum.Material.Slate
+	spawnLoc.Color = floor
+	spawnLoc.Parent = zoneFolder
 	makePart(Vector3.new(ZONE_SIZE, 2, ZONE_SIZE), Vector3.new(0, ZONE_HEIGHT + 1, 0), rock)
 	makePart(Vector3.new(ZONE_SIZE, ZONE_HEIGHT, 2), Vector3.new(0,  ZONE_HEIGHT/2, -half), rock)
 	makePart(Vector3.new(ZONE_SIZE, ZONE_HEIGHT, 2), Vector3.new(0,  ZONE_HEIGHT/2,  half), rock)
