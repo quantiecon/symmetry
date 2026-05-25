@@ -5,8 +5,6 @@ local RunService        = game:GetService("RunService")
 local NodeData = require(ReplicatedStorage.Shared.NodeData)
 local Remotes  = ReplicatedStorage.Remotes
 
-local ZONE_SIZE           = 120
-local ZONE_HEIGHT         = 28
 local NODE_AREA           = 75
 local NODE_COUNT          = 11
 local NODE_MIN_DIST       = 13
@@ -16,6 +14,7 @@ local HIT_INTERVAL_MANUAL = 1.0   -- manually clicked (50% faster)
 local UNIVERSAL_COOLDOWN  = 0.75  -- min time between any damage for one player
 local CRACK_DURATION      = 2.5
 local TARGET_RANGE        = 35
+local NODE_CENTER         = Vector3.new(0, 0, 200)   -- world-space centre of open mining field
 
 local nodeHP        = {}
 local nodeCracks    = {}
@@ -26,76 +25,6 @@ local playerManual  = {}
 local zoneFolder    = Instance.new("Folder")
 zoneFolder.Name     = "Zone1"
 zoneFolder.Parent   = workspace
-
-local function makePart(size, pos, color, material)
-	local p        = Instance.new("Part")
-	p.Size         = size
-	p.Position     = pos
-	p.Anchored     = true
-	p.Material     = material or Enum.Material.Slate
-	p.Color        = color
-	p.Parent       = zoneFolder
-	return p
-end
-
-local function BuildCavern()
-	local rock  = Color3.fromRGB(70, 65, 60)
-	local floor = Color3.fromRGB(85, 78, 70)
-	local half  = ZONE_SIZE / 2
-
-	makePart(Vector3.new(ZONE_SIZE, 2, ZONE_SIZE), Vector3.new(0, -1, 0), floor, Enum.Material.Slate)
-
-	makePart(Vector3.new(ZONE_SIZE, 2, ZONE_SIZE), Vector3.new(0, ZONE_HEIGHT + 1, 0), rock)
-	makePart(Vector3.new(ZONE_SIZE, ZONE_HEIGHT, 2), Vector3.new(0, ZONE_HEIGHT/2, -half), rock)
-	-- North wall (toward town): split to leave a 13-stud wide × 12-stud tall passage
-	local gapW  = 13
-	local sideW = (ZONE_SIZE - gapW) / 2   -- 53.5
-	makePart(Vector3.new(sideW, ZONE_HEIGHT, 2), Vector3.new(-(gapW/2 + sideW/2), ZONE_HEIGHT/2, half), rock)
-	makePart(Vector3.new(sideW, ZONE_HEIGHT, 2), Vector3.new( (gapW/2 + sideW/2), ZONE_HEIGHT/2, half), rock)
-	makePart(Vector3.new(gapW, ZONE_HEIGHT - 12, 2), Vector3.new(0, 12 + (ZONE_HEIGHT - 12)/2, half), rock)
-	-- Short tunnel section inside mine matching the external corridor
-	makePart(Vector3.new(gapW, 3, 5), Vector3.new(0, 13.5, half - 2.5), rock)
-	makePart(Vector3.new(2, 12, 5),   Vector3.new(-gapW/2 - 1, 6, half - 2.5), rock)
-	makePart(Vector3.new(2, 12, 5),   Vector3.new( gapW/2 + 1, 6, half - 2.5), rock)
-	makePart(Vector3.new(2, ZONE_HEIGHT, ZONE_SIZE), Vector3.new(-half, ZONE_HEIGHT/2, 0),  rock)
-	makePart(Vector3.new(2, ZONE_HEIGHT, ZONE_SIZE), Vector3.new( half, ZONE_HEIGHT/2, 0),  rock)
-
-	for i = 1, 18 do
-		local angle  = (i / 18) * math.pi * 2
-		local radius = half - 8 - math.random() * 8
-		local x      = math.cos(angle) * radius + (math.random() - 0.5) * 8
-		local z      = math.sin(angle) * radius + (math.random() - 0.5) * 8
-		local sy     = math.random(3, 8)
-		local boulder = makePart(
-			Vector3.new(math.random(4, 9), sy, math.random(4, 9)),
-			Vector3.new(x, sy / 2, z),
-			Color3.fromRGB(75 + math.random(-8, 8), 70 + math.random(-8, 8), 65 + math.random(-8, 8))
-		)
-		boulder.Shape = Enum.PartType.Ball
-		if math.random() < 0.25 then
-			local pl      = Instance.new("PointLight")
-			pl.Range      = 20
-			pl.Brightness = 0.5
-			pl.Color      = Color3.fromRGB(100, 160, 220)
-			pl.Parent     = boulder
-		end
-	end
-
-	for _ = 1, 8 do
-		local lp         = Instance.new("Part")
-		lp.Size          = Vector3.new(0.3, 0.3, 0.3)
-		lp.Position      = Vector3.new((math.random() - 0.5) * 90, ZONE_HEIGHT - 1, (math.random() - 0.5) * 90)
-		lp.Anchored      = true
-		lp.Transparency  = 1
-		lp.CanCollide    = false
-		lp.Parent        = zoneFolder
-		local pl         = Instance.new("PointLight")
-		pl.Range         = 35
-		pl.Brightness    = 0.6
-		pl.Color         = Color3.fromRGB(110, 170, 230)
-		pl.Parent        = lp
-	end
-end
 
 -- Five boulder shapes — same rough volume, varied silhouette
 local BOULDER_VARIANTS = {
@@ -196,7 +125,7 @@ local function ScatterPositions(count)
 		local ok, attempts = false, 0
 		while not ok and attempts < 200 do
 			attempts += 1
-			local candidate = Vector3.new(
+			local candidate = NODE_CENTER + Vector3.new(
 				(math.random() - 0.5) * NODE_AREA,
 				0,
 				(math.random() - 0.5) * NODE_AREA
@@ -415,5 +344,4 @@ Players.PlayerRemoving:Connect(function(player)
 	playerManual[player]  = nil
 end)
 
-BuildCavern()
 SpawnAllNodes()

@@ -1,5 +1,3 @@
-local Players = game:GetService("Players")
-
 local bp = workspace:FindFirstChild("Baseplate")
 if bp then bp:Destroy() end
 
@@ -36,10 +34,8 @@ local TERRACOTTA = Color3.fromRGB(190, 98, 60)
 local SHUTTER    = Color3.fromRGB(72, 108, 72)
 local WOOD       = Color3.fromRGB(130, 90, 55)
 local DARK       = Color3.fromRGB(40, 36, 32)
-local ARCH_COLOR = Color3.fromRGB(80, 75, 68)
-local ROCK       = Color3.fromRGB(68, 62, 56)
 
--- Ground covers town + road + aligns with mine floor
+-- Ground plane
 part(world, Vector3.new(280, 2, 560), Vector3.new(0, -1, 76), COBBLE, Enum.Material.Cobblestone)
 
 -- ── Piazza ────────────────────────────────────────────────────────────────
@@ -115,17 +111,11 @@ local function streetLamp(px, pz)
 	local pl = Instance.new("PointLight"); pl.Range = 22; pl.Brightness = 1.8; pl.Color = Color3.fromRGB(255, 210, 130); pl.Parent = glow
 end
 
+-- Piazza corner lamps + two at the path entrance
 streetLamp(-34, -34); streetLamp( 34, -34); streetLamp(-34,  34); streetLamp( 34,  34)
-streetLamp( -8, -68); streetLamp(  8, -68); streetLamp( -8, -110); streetLamp(  8, -110)
-streetLamp( -8, -148); streetLamp(  8, -148)
+streetLamp( -8, -48); streetLamp(  8, -48)
 
--- ── North road ────────────────────────────────────────────────────────────
-part(world, Vector3.new(18, 1.2, 126), T(0, 0.6, -107), Color3.fromRGB(155, 145, 130), Enum.Material.Cobblestone)
-part(world, Vector3.new(1.5, 1.4, 126), T(-9.75, 0.7, -107), STONE, Enum.Material.Cobblestone)
-part(world, Vector3.new(1.5, 1.4, 126), T( 9.75, 0.7, -107), STONE, Enum.Material.Cobblestone)
-
--- ── Torch helper ─────────────────────────────────────────────────────────
--- torchAt uses absolute world coords; torch uses T() offsets
+-- ── Torch helper ──────────────────────────────────────────────────────────
 local function torchAt(parent, wx, wy, wz)
 	local tf = Instance.new("Folder"); tf.Name = "Torch"; tf.Parent = parent
 	part(tf, Vector3.new(0.4, 1.2, 0.4), Vector3.new(wx, wy, wz), WOOD, Enum.Material.Wood)
@@ -134,56 +124,16 @@ local function torchAt(parent, wx, wy, wz)
 	local fl = Instance.new("PointLight"); fl.Range = 14; fl.Brightness = 1.8
 	fl.Color = Color3.fromRGB(255, 160, 40); fl.Parent = flame
 end
-local function torch(parent, px, pz)
-	local wp = T(px, 0, pz)
-	torchAt(parent, wp.X, 5.5, wp.Z)
-end
 
--- ── Cave entrance arch (world Z ≈ 132) ────────────────────────────────────
-local cave = Instance.new("Folder"); cave.Name = "CaveEntrance"; cave.Parent = world
-part(cave, Vector3.new(5, 16, 5), T(-9,  8, -168), ARCH_COLOR, Enum.Material.Slate)
-part(cave, Vector3.new(5, 16, 5), T( 9,  8, -168), ARCH_COLOR, Enum.Material.Slate)
-part(cave, Vector3.new(23, 4, 5), T( 0, 18, -168), ARCH_COLOR, Enum.Material.Slate)
-part(cave, Vector3.new(5,  3, 5), T( 0, 16, -168), Color3.fromRGB(95, 88, 78), Enum.Material.Slate)
-
-local signBoard = part(cave, Vector3.new(13, 2.5, 0.3), T(0, 22, -168), Color3.fromRGB(100, 65, 30), Enum.Material.Wood)
-local sg = Instance.new("SurfaceGui"); sg.Face = Enum.NormalId.Front; sg.Parent = signBoard
-local sl = Instance.new("TextLabel"); sl.Size = UDim2.new(1,0,1,0); sl.BackgroundTransparency = 1
-sl.TextColor3 = Color3.fromRGB(255, 230, 140); sl.Text = "MINIERA"
-sl.Font = Enum.Font.GothamBold; sl.TextScaled = true; sl.Parent = sg
-
-torch(cave, -12, -165); torch(cave,  12, -165)
-torch(cave, -12, -171); torch(cave,  12, -171)
-for i = 1, 4 do
-	local rz = -50 - i * 26
-	torch(world, -11, rz); torch(world, 11, rz)
-end
-
--- ── Tunnel corridor connecting arch to mine (world Z 60 → 132) ───────────
--- Open cross-section: 13 wide × 12 tall, matching the mine wall gap
-local tunnel = Instance.new("Folder"); tunnel.Name = "Tunnel"; tunnel.Parent = world
--- length = 72 studs, centre Z = 96
-part(tunnel, Vector3.new(13, 3, 72), Vector3.new(0, 13.5, 96), ROCK, Enum.Material.Slate)  -- ceiling
-part(tunnel, Vector3.new(2, 12, 72), Vector3.new(-7.5, 6, 96), ROCK, Enum.Material.Slate)  -- left wall
-part(tunnel, Vector3.new(2, 12, 72), Vector3.new( 7.5, 6, 96), ROCK, Enum.Material.Slate)  -- right wall
-
-for _, wz in { 70, 86, 102, 118 } do
-	torchAt(tunnel, -5.5, 7, wz)
-	torchAt(tunnel,  5.5, 7, wz)
-end
-
--- ── Exit arch inside mine (world Z = 62, framing the wall opening) ────────
-local exitCave = Instance.new("Folder"); exitCave.Name = "MineExit"; exitCave.Parent = world
-part(exitCave, Vector3.new(5, 16, 5), Vector3.new(-9,  8, 62), ARCH_COLOR, Enum.Material.Slate)
-part(exitCave, Vector3.new(5, 16, 5), Vector3.new( 9,  8, 62), ARCH_COLOR, Enum.Material.Slate)
-part(exitCave, Vector3.new(23, 4, 5), Vector3.new( 0, 18, 62), ARCH_COLOR, Enum.Material.Slate)
-part(exitCave, Vector3.new(5,  3, 5), Vector3.new( 0, 16, 62), Color3.fromRGB(95, 88, 78), Enum.Material.Slate)
-
-local exitSign = part(exitCave, Vector3.new(13, 2.2, 0.3), Vector3.new(0, 22, 62), Color3.fromRGB(100, 65, 30), Enum.Material.Wood)
-local esg = Instance.new("SurfaceGui"); esg.Face = Enum.NormalId.Back; esg.Parent = exitSign
-local esl = Instance.new("TextLabel"); esl.Size = UDim2.new(1,0,1,0); esl.BackgroundTransparency = 1
-esl.TextColor3 = Color3.fromRGB(255, 230, 140); esl.Text = "↑ Veldmere"
-esl.Font = Enum.Font.GothamBold; esl.TextScaled = true; esl.Parent = esg
+-- ── Dirt path north to the mining field ───────────────────────────────────
+-- Runs from piazza edge (T z=-41) to mining area (T z=-100), 60 studs
+local path = Instance.new("Folder"); path.Name = "Path"; path.Parent = world
+part(path, Vector3.new(10, 0.4, 60), T(0, 0.2, -70), Color3.fromRGB(115, 100, 80), Enum.Material.Ground)
+-- Torch posts flanking the path
+torchAt(path, T(-7, 0, -60).X,  1.6, T(0, 0, -60).Z)
+torchAt(path, T( 7, 0, -60).X,  1.6, T(0, 0, -60).Z)
+torchAt(path, T(-7, 0, -88).X,  1.6, T(0, 0, -88).Z)
+torchAt(path, T( 7, 0, -88).X,  1.6, T(0, 0, -88).Z)
 
 -- ── SpawnLocation ─────────────────────────────────────────────────────────
 local spawnLoc = Instance.new("SpawnLocation")
@@ -195,11 +145,10 @@ spawnLoc.Material = Enum.Material.Cobblestone; spawnLoc.Color = COBBLE; spawnLoc
 local function createNPC(pos, npcName, lines)
 	local model = Instance.new("Model"); model.Name = npcName; model.Parent = world
 
-	local skinColor = Color3.fromRGB(255, 210, 160)
+	local skinColor  = Color3.fromRGB(255, 210, 160)
 	local shirtColor = Color3.fromRGB(160, 100, 60)
 	local pantColor  = Color3.fromRGB(70, 55, 40)
 
-	-- Body parts (all anchored)
 	part(model, Vector3.new(0.9, 1.5, 0.9), pos + Vector3.new(-0.5, 0.75, 0), pantColor,  Enum.Material.SmoothPlastic)
 	part(model, Vector3.new(0.9, 1.5, 0.9), pos + Vector3.new( 0.5, 0.75, 0), pantColor,  Enum.Material.SmoothPlastic)
 	local torso = part(model, Vector3.new(2, 2, 1), pos + Vector3.new(0, 2.5, 0), shirtColor, Enum.Material.SmoothPlastic)
@@ -208,20 +157,17 @@ local function createNPC(pos, npcName, lines)
 	local head = part(model, Vector3.new(1.4, 1.4, 1.4), pos + Vector3.new(0, 4.2, 0), skinColor, Enum.Material.SmoothPlastic)
 	local hm = Instance.new("SpecialMesh"); hm.MeshType = Enum.MeshType.Sphere; hm.Parent = head
 
-	-- Dialog data
 	model:SetAttribute("DialogCount", #lines)
 	for i, line in ipairs(lines) do
 		model:SetAttribute("Line_" .. i, line)
 	end
 
-	-- ProximityPrompt on the torso
 	local prompt = Instance.new("ProximityPrompt")
 	prompt.ObjectText = npcName; prompt.ActionText = "Talk"
 	prompt.KeyboardKeyCode = Enum.KeyCode.E
 	prompt.MaxActivationDistance = 8; prompt.HoldDuration = 0
 	prompt.Parent = torso
 
-	-- Floating name
 	local bb = Instance.new("BillboardGui"); bb.Size = UDim2.new(0, 130, 0, 24)
 	bb.StudsOffset = Vector3.new(0, 2.8, 0); bb.AlwaysOnTop = false; bb.Parent = head
 	local nl = Instance.new("TextLabel"); nl.Size = UDim2.new(1, 0, 1, 0)
@@ -230,50 +176,11 @@ local function createNPC(pos, npcName, lines)
 	nl.TextStrokeTransparency = 0.3; nl.Parent = bb
 end
 
--- Aldo stands on the road near the cave entrance — greets players heading to the mine
-createNPC(T(14, 0, -140), "Aldo", {
-	"Welcome to Veldmere! The mines behind me hold great riches.",
-	"Walk through the arch and you'll find yourself in the tunnels.",
-	"Click an ore node to focus your pickaxe — it strikes 50% faster when targeted.",
+-- Aldo stands at the edge of town, facing the open mining field
+createNPC(T(14, 0, -55), "Aldo", {
+	"Welcome to Veldmere! The ore fields lie just ahead.",
+	"Walk up the path and you will find the nodes scattered across the ground.",
+	"Click a node to lock your pickaxe onto it — it strikes 50% faster when targeted.",
 	"Rarer nodes glow brighter. Purple Mythic crystals are the rarest of all.",
 	"Safe travels, miner. May your pockets grow heavy!",
 })
-
--- ── Teleporters ───────────────────────────────────────────────────────────
-local cooldowns = {}
-local COOLDOWN  = 2
-
-local function tryTeleport(hit, destination)
-	local char = hit.Parent
-	if not char or not char:FindFirstChildWhichIsA("Humanoid") then return end
-	local player = Players:GetPlayerFromCharacter(char)
-	if not player then return end
-	local now = os.clock()
-	if now - (cooldowns[player] or 0) < COOLDOWN then return end
-	cooldowns[player] = now
-	char:PivotTo(CFrame.new(destination))
-end
-
--- Trigger sits at the arch face; player warps just inside the mine north wall
-local enterTele = Instance.new("Part")
-enterTele.Name = "EnterTele"; enterTele.Size = Vector3.new(13, 12, 4)
-enterTele.Position = T(0, 6, -167)   -- world (0,6,133)
-enterTele.Anchored = true; enterTele.Transparency = 1; enterTele.CanCollide = false
-enterTele.Parent = world
-enterTele.Touched:Connect(function(hit)
-	tryTeleport(hit, Vector3.new(0, 4, 58))
-end)
-
--- Trigger sits just inside the mine exit arch; warps to road beside cave entrance
-local exitTele = Instance.new("Part")
-exitTele.Name = "ExitTele"; exitTele.Size = Vector3.new(13, 12, 4)
-exitTele.Position = Vector3.new(0, 6, 65)   -- just inside mine, past the exit arch
-exitTele.Anchored = true; exitTele.Transparency = 1; exitTele.CanCollide = false
-exitTele.Parent = world
-exitTele.Touched:Connect(function(hit)
-	tryTeleport(hit, T(0, 4, -148))   -- world (0,4,152)
-end)
-
-Players.PlayerRemoving:Connect(function(player)
-	cooldowns[player] = nil
-end)
