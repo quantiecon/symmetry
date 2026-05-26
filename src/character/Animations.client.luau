@@ -1,37 +1,34 @@
-local UserInputService = game:GetService("UserInputService")
-local RunService       = game:GetService("RunService")
+local UserInputService  = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService        = game:GetService("RunService")
 
 local character = script.Parent
 local humanoid  = character:WaitForChild("Humanoid")
 local animator  = humanoid:WaitForChild("Animator")
 local hrp       = character:WaitForChild("HumanoidRootPart")
 
+-- Animation objects live in ReplicatedStorage so they are created by the
+-- server at startup and replicated — no client-side HTTP fetch required.
+local anims      = ReplicatedStorage:WaitForChild("CharacterAnims")
+local walkTrack  = animator:LoadAnimation(anims:WaitForChild("Walk"))
+local runTrack   = animator:LoadAnimation(anims:WaitForChild("Run"))
+local emoteTrack = animator:LoadAnimation(anims:WaitForChild("SixSeven"))
+
+walkTrack.Priority  = Enum.AnimationPriority.Action
+runTrack.Priority   = Enum.AnimationPriority.Action
+emoteTrack.Priority = Enum.AnimationPriority.Action
+
 -- Speed below this plays walk; at or above plays run.
 -- Base walk = 16, sprint = 25.6 — 20 sits cleanly in between.
 local WALK_RUN_THRESHOLD = 20
 
-local function makeTrack(id, priority)
-	local anim = Instance.new("Animation")
-	anim.AnimationId = "rbxassetid://" .. id
-	local track = animator:LoadAnimation(anim)
-	track.Priority = priority
-	return track
-end
-
--- Action priority overrides whatever Animate plays for walk/run
-local walkTrack  = makeTrack("122235205002711", Enum.AnimationPriority.Action)
-local runTrack   = makeTrack("100044344992725", Enum.AnimationPriority.Action)
-local emoteTrack = makeTrack("101861600822053", Enum.AnimationPriority.Action)
-
 -- ── Movement loop ─────────────────────────────────────────────────────────
 RunService.Heartbeat:Connect(function()
-	-- Horizontal speed only (ignore vertical so jumping doesn't affect it)
 	local vel   = hrp.AssemblyLinearVelocity
 	local speed = Vector3.new(vel.X, 0, vel.Z).Magnitude
 	local moving = speed > 1
 
 	if emoteTrack.IsPlaying then
-		-- Emote cancels on movement
 		if moving then emoteTrack:Stop(0.2) end
 		return
 	end
