@@ -1,0 +1,56 @@
+{
+  "name": "Veldmere",
+  "tree": {
+    "$className": "DataModel",
+
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "Shared": {
+        "$path": "src/shared"
+      },
+      "Remotes": {
+        "$className": "Folder",
+        "SetTarget":       { "$className": "RemoteEvent" },
+        "TargetConfirmed": { "$className": "RemoteEvent" },
+        "TargetCleared":   { "$className": "RemoteEvent" },
+        "OnHit":           { "$className": "RemoteEvent" },
+        "CrackWindow":     { "$className": "RemoteEvent" },
+        "CrackClosed":     { "$className": "RemoteEvent" },
+        "CrackHit":        { "$className": "RemoteEvent" },
+        "NodeDepleted":    { "$className": "RemoteEvent" },
+        "NodeHit":         { "$className": "RemoteEvent" },
+        "OnYield":         { "$className": "RemoteEvent" }
+      }
+    },
+
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "Server": {
+        "$path": "src/server"
+      }
+    },
+
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "Client": {
+          "$path": "src/client"
+        }
+      },
+      "StarterCharacterScripts": {
+        "$className": "StarterCharacterScripts",
+        "Character": {
+          "$path": "src/character"
+        }
+      }
+    },
+
+    "StarterGui": {
+      "$className": "StarterGui",
+      "Gui": {
+        "$path": "src/ui"
+      }
+    }
+  }
+}
