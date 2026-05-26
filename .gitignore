@@ -5,6 +5,9 @@
 *.rbxmx
 # Exception: animation assets checked into source
 !src/shared/Animations/*.rbxm
+# Exception: child-instance models for Rojo-managed scripts
+!src/server/Main/*.rbxm
+!src/server/OreSpawn/*.rbxm
 
 # Rojo-generated sourcemap
 sourcemap.json
