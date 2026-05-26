@@ -154,7 +154,9 @@ local function processCollectedOres(count, DrillData, Player)
 		combinedModifier = combinedModifier * 1.1
 	end
 	
-
+	if PlayerData.LuckMultiplier then
+		combinedModifier = combinedModifier * PlayerData.LuckMultiplier.Value
+	end
 	
 	print(combinedModifier)
 	

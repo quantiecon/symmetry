@@ -4,7 +4,7 @@ local Events = game.ReplicatedStorage.Events
 
 local UIS = game:GetService("UserInputService")
 
-local debounce = false
+debounce = false
 
 UIS.InputBegan:Connect(function(input,isTyping)
 	if isTyping then return end
