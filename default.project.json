@@ -5,117 +5,42 @@
 
     "ServerScriptService": {
       "$className": "ServerScriptService",
-      "Server": {
-        "$path": "src/server"
-      }
-    },
-
-    "StarterPlayer": {
-      "$className": "StarterPlayer",
-      "StarterPlayerScripts": {
-        "$className": "StarterPlayerScripts",
-        "Client": {
-          "$path": "src/client"
-        }
-      }
-    },
-
-    "StarterGui": {
-      "$className": "StarterGui",
-      "Scripts": {
-        "$path": "src/gui"
-      }
-    },
-
-    "StarterPack": {
-      "$className": "StarterPack",
-      "Pack": {
-        "$path": "src/pack"
-      }
+      "Main":              { "$path": "src/server/Main" },
+      "OreSpawn":          { "$path": "src/server/OreSpawn" },
+      "CollectionServer":  { "$path": "src/server/CollectionServer.server.luau" },
+      "Crafting":          { "$path": "src/server/Crafting.server.luau" },
+      "DailyRewards":      { "$path": "src/server/DailyRewards.server.luau" },
+      "DataHandler":       { "$path": "src/server/DataHandler.luau" },
+      "EventServer":       { "$path": "src/server/EventServer.server.luau" },
+      "FriendReferral":    { "$path": "src/server/FriendReferral.server.luau" },
+      "Physics":           { "$path": "src/server/Physics.server.luau" },
+      "PlacementServer":   { "$path": "src/server/PlacementServer.server.luau" },
+      "Purchases":         { "$path": "src/server/Purchases.server.luau" },
+      "QuestServer":       { "$path": "src/server/QuestServer.server.luau" },
+      "Requests":          { "$path": "src/server/Requests.server.luau" },
+      "RewardHandler":     { "$path": "src/server/RewardHandler.server.luau" },
+      "ServerMessages":    { "$path": "src/server/ServerMessages.server.luau" },
+      "StockHandler":      { "$path": "src/server/StockHandler.server.luau" },
+      "ToolServer":        { "$path": "src/server/ToolServer.server.luau" },
+      "TradeServer":       { "$path": "src/server/TradeServer.server.luau" },
+      "WanderingMerchant": { "$path": "src/server/WanderingMerchant.server.luau" },
+      "WeatherHandler":    { "$path": "src/server/WeatherHandler.server.luau" },
+      "WheelHandler":      { "$path": "src/server/WheelHandler.server.luau" },
+      "WorkerServer":      { "$path": "src/server/WorkerServer.server.luau" }
     },
 
     "ReplicatedStorage": {
       "$className": "ReplicatedStorage",
       "Modules": {
-        "$path": "src/shared"
-      },
-      "Events": {
         "$className": "Folder",
-        "AcceptTrade":             { "$className": "RemoteEvent" },
-        "AcceptTradeRequest":      { "$className": "RemoteEvent" },
-        "AddToTradeOffer":         { "$className": "RemoteEvent" },
-        "Alert":                   { "$className": "RemoteEvent" },
-        "BroadcastOreMessage":     { "$className": "RemoteEvent" },
-        "BroadcastTipMessage":     { "$className": "RemoteEvent" },
-        "BuyDrillCoin":            { "$className": "RemoteEvent" },
-        "BuyDrillRobux":           { "$className": "RemoteEvent" },
-        "BuyFromMerchant":         { "$className": "RemoteEvent" },
-        "BuyWithDiamonds":         { "$className": "RemoteEvent" },
-        "CameraShake":             { "$className": "RemoteEvent" },
-        "CancelTrade":             { "$className": "RemoteEvent" },
-        "ClaimDailyReward":        { "$className": "RemoteEvent" },
-        "ClaimReward":             { "$className": "RemoteEvent" },
-        "ClientFX":                { "$className": "RemoteEvent" },
-        "CoinChanged":             { "$className": "RemoteEvent" },
-        "Collect":                 { "$className": "RemoteEvent" },
-        "CollectPlaytime":         { "$className": "RemoteEvent" },
-        "ContractTrade":           { "$className": "RemoteEvent" },
-        "Craft":                   { "$className": "RemoteEvent" },
-        "Cutscene":                { "$className": "RemoteEvent" },
-        "DevProductBought":        { "$className": "RemoteEvent" },
-        "DisplayInteract":         { "$className": "RemoteEvent" },
-        "EquipWorker":             { "$className": "RemoteEvent" },
-        "EventTrade":              { "$className": "RemoteEvent" },
-        "FireWorker":              { "$className": "RemoteEvent" },
-        "GemsChanged":             { "$className": "RemoteEvent" },
-        "GetNewWorker":            { "$className": "RemoteEvent" },
-        "LockOre":                 { "$className": "RemoteEvent" },
-        "LowGraphicsMode":         { "$className": "RemoteEvent" },
-        "LuckBought":              { "$className": "RemoteEvent" },
-        "MainAlert":               { "$className": "RemoteEvent" },
-        "MerchantUpdate":          { "$className": "RemoteEvent" },
-        "NewDrill":                { "$className": "RemoteEvent" },
-        "NewItems":                { "$className": "RemoteEvent" },
-        "OpenCrate":               { "$className": "RemoteEvent" },
-        "OpenEventPack":           { "$className": "RemoteEvent" },
-        "PickUpDrill":             { "$className": "RemoteEvent" },
-        "PlaceDrill":              { "$className": "RemoteEvent" },
-        "PlotSizeChange":          { "$className": "RemoteEvent" },
-        "Profit":                  { "$className": "RemoteEvent" },
-        "RebuildWorkerUI":         { "$className": "RemoteEvent" },
-        "RemoveFromTradeOffer":    { "$className": "RemoteEvent" },
-        "RequestTrade":            { "$className": "RemoteEvent" },
-        "Sell":                    { "$className": "RemoteEvent" },
-        "Settings":                { "$className": "RemoteEvent" },
-        "StartTrade":              { "$className": "RemoteEvent" },
-        "Teleport":                { "$className": "RemoteEvent" },
-        "ToolUse":                 { "$className": "RemoteEvent" },
-        "TradeRequestsChange":     { "$className": "RemoteEvent" },
-        "TutorialComplete":        { "$className": "RemoteEvent" },
-        "UpdateContractStock":     { "$className": "RemoteEvent" },
-        "UpdateDailyRewardUI":     { "$className": "RemoteEvent" },
-        "UpdateEventStock":        { "$className": "RemoteEvent" },
-        "UpdateOwnTradeOffer":     { "$className": "RemoteEvent" },
-        "UpdatePartnerTradeOffer": { "$className": "RemoteEvent" },
-        "UpdateQuests":            { "$className": "RemoteEvent" },
-        "UpdateSellUI":            { "$className": "RemoteEvent" },
-        "UpdateSpinAmount":        { "$className": "RemoteEvent" },
-        "UpdateWorkerCapacity":    { "$className": "RemoteEvent" },
-        "WorkerLimitChange":       { "$className": "RemoteEvent" },
-        "Get":                     { "$className": "RemoteFunction" },
-        "WheelSpin":               { "$className": "RemoteFunction" }
-      },
-      "System": {
-        "$className": "Folder",
-        "Place": { "$className": "RemoteFunction" },
-        "Parts": { "$className": "Folder" }
-      }
-    },
-
-    "ServerStorage": {
-      "$className": "ServerStorage",
-      "Storage": {
-        "$path": "src/serverstorage"
+        "BuffManager":     { "$path": "src/shared/BuffManager.luau" },
+        "CraftingRecipes": { "$path": "src/shared/CraftingRecipes.luau" },
+        "CrateChances":    { "$path": "src/shared/CrateChances.luau" },
+        "ItemInfo":        { "$path": "src/shared/ItemInfo.luau" },
+        "ProfileService":  { "$path": "src/shared/ProfileService.luau" },
+        "QuestInfo":       { "$path": "src/shared/QuestInfo.luau" },
+        "ViewportModel":   { "$path": "src/shared/ViewportModel.luau" },
+        "WorkerInfo":      { "$path": "src/shared/WorkerInfo.luau" }
       }
     }
   }
