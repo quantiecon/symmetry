@@ -71,6 +71,10 @@ local function showLine(npc, index)
 end
 
 local function openDialog(npc, prompt)
+	-- Re-enable any prompt from a previous conversation that got interrupted
+	if activePrompt and activePrompt ~= prompt then
+		activePrompt.Enabled = true
+	end
 	activeNPC    = npc
 	activePrompt = prompt
 	prompt.Enabled = false   -- hide the prompt bubble while talking

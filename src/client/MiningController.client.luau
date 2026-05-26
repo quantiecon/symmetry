@@ -17,6 +17,10 @@ local waistTwist      = 0
 local pickaxeTargetCF = nil
 local flyId           = 0
 
+local crackNode    = nil   -- node currently showing a crack window
+local crackExpiry  = 0     -- os.clock() deadline for the current crack window
+local crackBox     = nil   -- SelectionBox adorning the cracked node
+
 local ORBIT_RADIUS = 3.2
 local ORBIT_SPEED  = 2.2
 local ORBIT_HEIGHT = 1.5
@@ -66,6 +70,7 @@ oreLabel.TextSize             = 20
 oreLabel.Parent               = oreFrame
 
 local hintLabel = Instance.new("TextLabel")
+hintLabel.Name                 = "HintLabel"
 hintLabel.Size                 = UDim2.new(0, 300, 0, 30)
 hintLabel.Position             = UDim2.new(0.5, -150, 1, -60)
 hintLabel.BackgroundTransparency = 1
@@ -75,6 +80,19 @@ hintLabel.Font                 = Enum.Font.Gotham
 hintLabel.TextSize             = 16
 hintLabel.TextTransparency     = 0.3
 hintLabel.Parent               = gui
+
+local crackLabel = Instance.new("TextLabel")
+crackLabel.Name                 = "CrackLabel"
+crackLabel.Size                 = UDim2.new(0, 260, 0, 44)
+crackLabel.Position             = UDim2.new(0.5, -130, 0.5, -80)
+crackLabel.BackgroundTransparency = 1
+crackLabel.TextColor3           = Color3.fromRGB(255, 110, 20)
+crackLabel.Text                 = "CRACK OPEN!  Click to strike!"
+crackLabel.Font                 = Enum.Font.GothamBold
+crackLabel.TextSize             = 22
+crackLabel.TextStrokeTransparency = 0.1
+crackLabel.TextTransparency     = 1
+crackLabel.Parent               = gui
 
 -- ── Character binding ─────────────────────────────────────────────────────
 -- Runs in its own thread (task.spawn / CharacterAdded) so WaitForChild
@@ -182,6 +200,38 @@ local function YieldPop(amount, targetPart)
 	task.delay(1.2, function() bb:Destroy() end)
 end
 
+-- ── Crack window helpers ──────────────────────────────────────────────────
+local function showCrack(node, duration)
+	crackNode   = node
+	crackExpiry = os.clock() + duration
+
+	local main = node:FindFirstChild("Main")
+	if crackBox then crackBox:Destroy() end
+	if main then
+		crackBox = Instance.new("SelectionBox")
+		crackBox.Adornee             = main
+		crackBox.Color3              = Color3.fromRGB(255, 80, 0)
+		crackBox.LineThickness       = 0.09
+		crackBox.SurfaceTransparency = 0.65
+		crackBox.SurfaceColor3       = Color3.fromRGB(255, 140, 0)
+		crackBox.Parent              = workspace
+	end
+
+	crackLabel.TextTransparency = 0
+	TweenService:Create(crackLabel, TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { TextTransparency = 1 }):Play()
+end
+
+local function hideCrack(node)
+	if crackNode ~= node and node ~= nil then return end
+	crackNode   = nil
+	crackExpiry = 0
+	if crackBox then
+		crackBox:Destroy()
+		crackBox = nil
+	end
+	TweenService:Create(crackLabel, TweenInfo.new(0.15), { TextTransparency = 1 }):Play()
+end
+
 -- ── Remotes ───────────────────────────────────────────────────────────────
 UserInputService.InputBegan:Connect(function(input, processed)
 	if processed then return end
@@ -190,6 +240,13 @@ UserInputService.InputBegan:Connect(function(input, processed)
 	if not hit then return end
 	local node = hit.Parent
 	if not node or not node:GetAttribute("Active") then return end
+
+	-- Clicking the cracked node during its window fires a bonus hit
+	if node == crackNode and os.clock() < crackExpiry then
+		Remotes.CrackHit:FireServer(node)
+		return
+	end
+
 	Remotes.SetTarget:FireServer(node)
 end)
 
@@ -213,6 +270,7 @@ Remotes.NodeDepleted.OnClientEvent:Connect(function(node)
 		currentTarget  = nil
 		hintLabel.Text = "Walk near a node to mine"
 	end
+	hideCrack(node)
 end)
 
 Remotes.OnYield.OnClientEvent:Connect(function(amount, total)
@@ -221,6 +279,24 @@ Remotes.OnYield.OnClientEvent:Connect(function(amount, total)
 	if main then YieldPop(amount, main) end
 end)
 
-Remotes.CrackWindow.OnClientEvent:Connect(function() end)
-Remotes.CrackClosed.OnClientEvent:Connect(function() end)
-Remotes.NodeHit.OnClientEvent:Connect(function() end)
+Remotes.CrackWindow.OnClientEvent:Connect(function(node, duration)
+	showCrack(node, duration)
+end)
+
+Remotes.CrackClosed.OnClientEvent:Connect(function(node)
+	hideCrack(node)
+end)
+
+Remotes.NodeHit.OnClientEvent:Connect(function(node, ratio)
+	if node ~= currentTarget then return end
+	local main = node:FindFirstChild("Main")
+	if not main then return end
+	-- Pulse the glow brightness proportional to remaining HP
+	local light = main:FindFirstChildWhichIsA("PointLight")
+	if light then
+		TweenService:Create(light, TweenInfo.new(0.12), { Brightness = 2.5 }):Play()
+		task.delay(0.12, function()
+			TweenService:Create(light, TweenInfo.new(0.25), { Brightness = ratio * 1.5 }):Play()
+		end)
+	end
+end)

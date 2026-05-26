@@ -241,7 +241,8 @@ local function ProcessHit(player, node, isCrackHit)
 		end)
 	else
 		local ratio = hp / node:GetAttribute("MaxHP")
-		node.Main.Transparency = (1 - ratio) * 0.25
+		local mainPart = node:FindFirstChild("Main")
+		if mainPart then mainPart.Transparency = (1 - ratio) * 0.25 end
 		Remotes.NodeHit:FireAllClients(node, ratio)
 	end
 end
@@ -336,6 +337,15 @@ Remotes.CrackHit.OnServerEvent:Connect(function(player, node)
 
 	playerLastHit[player] = now
 	ProcessHit(player, node, true)
+end)
+
+Players.PlayerAdded:Connect(function(player)
+	player.CharacterAdded:Connect(function()
+		playerTargets[player] = nil
+		playerLastHit[player] = nil
+		playerManual[player]  = nil
+		Remotes.TargetCleared:FireClient(player)
+	end)
 end)
 
 Players.PlayerRemoving:Connect(function(player)
