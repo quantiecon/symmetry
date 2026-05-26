@@ -1,4 +1,4 @@
-local DataManager = require(game.ServerScriptService.DataHandler) 
+local DataManager = require(script.Parent.DataHandler)
 local ItemInfo = require(game.ReplicatedStorage.Modules.ItemInfo)
 local BuffManager = require(game.ReplicatedStorage.Modules.BuffManager)
 
