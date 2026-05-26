@@ -149,13 +149,12 @@ local function createNPC(pos, npcName, lines)
 	local shirtColor = Color3.fromRGB(160, 100, 60)
 	local pantColor  = Color3.fromRGB(70, 55, 40)
 
-	part(model, Vector3.new(0.9, 1.5, 0.9), pos + Vector3.new(-0.5, 0.75, 0), pantColor,  Enum.Material.SmoothPlastic)
-	part(model, Vector3.new(0.9, 1.5, 0.9), pos + Vector3.new( 0.5, 0.75, 0), pantColor,  Enum.Material.SmoothPlastic)
-	local torso = part(model, Vector3.new(2, 2, 1), pos + Vector3.new(0, 2.5, 0), shirtColor, Enum.Material.SmoothPlastic)
-	part(model, Vector3.new(0.8, 1.8, 0.8), pos + Vector3.new(-1.4, 2.4, 0), skinColor,  Enum.Material.SmoothPlastic)
-	part(model, Vector3.new(0.8, 1.8, 0.8), pos + Vector3.new( 1.4, 2.4, 0), skinColor,  Enum.Material.SmoothPlastic)
-	local head = part(model, Vector3.new(1.4, 1.4, 1.4), pos + Vector3.new(0, 4.2, 0), skinColor, Enum.Material.SmoothPlastic)
-	local hm = Instance.new("SpecialMesh"); hm.MeshType = Enum.MeshType.Sphere; hm.Parent = head
+	part(model, Vector3.new(0.9, 1.5, 0.9), pos + Vector3.new(-0.5, 0.75, 0), pantColor,  Enum.Material.Plastic)
+	part(model, Vector3.new(0.9, 1.5, 0.9), pos + Vector3.new( 0.5, 0.75, 0), pantColor,  Enum.Material.Plastic)
+	local torso = part(model, Vector3.new(2, 2, 1), pos + Vector3.new(0, 2.5, 0), shirtColor, Enum.Material.Plastic)
+	part(model, Vector3.new(0.8, 1.8, 0.8), pos + Vector3.new(-1.4, 2.4, 0), skinColor,  Enum.Material.Plastic)
+	part(model, Vector3.new(0.8, 1.8, 0.8), pos + Vector3.new( 1.4, 2.4, 0), skinColor,  Enum.Material.Plastic)
+	local head = part(model, Vector3.new(1.2, 1.2, 1.2), pos + Vector3.new(0, 4.1, 0), skinColor, Enum.Material.Plastic)
 
 	model:SetAttribute("DialogCount", #lines)
 	for i, line in ipairs(lines) do
