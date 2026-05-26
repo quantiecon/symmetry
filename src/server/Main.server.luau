@@ -274,7 +274,7 @@ game.Players.PlayerAdded:Connect(function(Player)
 				end)
 				
 				for i,v in pairs(Plots:GetChildren()) do
-					if v:FindFirstChild("Owner") and v:FindFirstChild("Owner").Value == "" then
+					if v:FindFirstChild("Owner") and v:FindFirstChild("Owner").Value == Player.Name then
 						Player.Character:PivotTo(v:FindFirstChild("Teleport").CFrame)
 						break
 					end
