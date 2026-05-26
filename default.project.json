@@ -20,22 +20,6 @@
         "NodeDepleted":    { "$className": "RemoteEvent" },
         "NodeHit":         { "$className": "RemoteEvent" },
         "OnYield":         { "$className": "RemoteEvent" }
-      },
-
-      "CharacterAnims": {
-        "$className": "Folder",
-        "Walk": {
-          "$className": "Animation",
-          "$properties": { "AnimationId": "rbxassetid://122235205002711" }
-        },
-        "Run": {
-          "$className": "Animation",
-          "$properties": { "AnimationId": "rbxassetid://100044344992725" }
-        },
-        "SixSeven": {
-          "$className": "Animation",
-          "$properties": { "AnimationId": "rbxassetid://101861600822053" }
-        }
       }
     },
 
