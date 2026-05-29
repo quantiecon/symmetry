@@ -65,13 +65,15 @@ Events.Craft.OnServerEvent:Connect(function(Player, ItemName)
 		end
 	end
 
-	-- One-Time Quest Update
+	-- One-Time Quest Update (Discover Crafting or Grand Craftsman)
 	local oneTimeQuest = PlayerData:FindFirstChild("OneTimeQuests")
-	if oneTimeQuest and string.find(oneTimeQuest.Value, "Discover Crafting") then
+	if oneTimeQuest then
 		local questName, progress, goal = string.match(oneTimeQuest.Value, "^(.-):(%d+),(%d+)$")
-		if questName and progress and goal then
-			progress = math.min(tonumber(progress) + 1, tonumber(goal))
-			oneTimeQuest.Value = string.format("%s:%d,%d", questName, progress, goal)
+		if questName and (questName == "Discover Crafting" or questName == "Grand Craftsman") then
+			if progress and goal then
+				progress = math.min(tonumber(progress) + 1, tonumber(goal))
+				oneTimeQuest.Value = string.format("%s:%d,%d", questName, progress, goal)
+			end
 		end
 	end
 end)

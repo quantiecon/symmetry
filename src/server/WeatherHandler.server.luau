@@ -193,8 +193,8 @@ elseif weatherValue.Value == "Nature" then
 			v.Enabled = false
 		end
 	end
-	
-	for i,v in pairs(game.Workspace.WeatherEffects.Arcane:GetDescendants()) do
+
+	for i,v in pairs(game.Workspace.WeatherEffects.Nature:GetDescendants()) do
 		if v:IsA("ParticleEmitter") or v:IsA("Beam") then
 			v.Enabled = true
 		end

@@ -20,6 +20,7 @@
       "Requests":          { "$path": "src/server/Requests.server.luau" },
       "RewardHandler":     { "$path": "src/server/RewardHandler.server.luau" },
       "ServerMessages":    { "$path": "src/server/ServerMessages.server.luau" },
+      "SprintHandler":     { "$path": "src/server/SprintHandler.server.luau" },
       "StockHandler":      { "$path": "src/server/StockHandler.server.luau" },
       "ToolServer":        { "$path": "src/server/ToolServer.server.luau" },
       "TradeServer":       { "$path": "src/server/TradeServer.server.luau" },
@@ -41,6 +42,19 @@
         "QuestInfo":       { "$path": "src/shared/QuestInfo.luau" },
         "ViewportModel":   { "$path": "src/shared/ViewportModel.luau" },
         "WorkerInfo":      { "$path": "src/shared/WorkerInfo.luau" }
+      }
+    },
+
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterCharacterScripts": {
+        "$className": "StarterCharacterScripts",
+        "SprintScript": { "$path": "src/client/SprintScript.client.luau" }
+      },
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "SkipRollButton":   { "$path": "src/client/SkipRollButton.client.luau" },
+        "IntroShopDelay":   { "$path": "src/client/IntroShopDelay.client.luau" }
       }
     }
   }

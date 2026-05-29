@@ -742,6 +742,15 @@ game.Players.PlayerAdded:Connect(function(Player)
 		if Player.Character then
 			Player.Character:PivotTo(Plot:FindFirstChild("Teleport").CFrame)
 		end
+
+		-- Delay the intro shop popup for first-time players (avoids immediate interruption)
+		if PlayerData.FirstTimePlaying and PlayerData.FirstTimePlaying.Value == true then
+			task.delay(4, function()
+				if Player and Player.Parent then
+					Events.DelayedIntroShop:FireClient(Player)
+				end
+			end)
+		end
 		
 		while wait(1) do
 			if not Player or not Plot then
@@ -926,28 +935,22 @@ Events.Sell.OnServerEvent:Connect(function(Player, Action)
 			PlayerData.Coins.Value += Profit
 
 			if Profit > 0 then
-				local OneTimeQuests = PlayerData:FindFirstChild("OneTimeQuests") --if Collect Ore Quest is there
-				if OneTimeQuests and string.find(OneTimeQuests.Value, "Make Money") then
+				local OneTimeQuests = PlayerData:FindFirstChild("OneTimeQuests")
+				if OneTimeQuests then
 					local questName, progress, goal = string.match(OneTimeQuests.Value, "^(.-):(%d+),(%d+)$")
-					if questName and progress and goal then
-						progress = tonumber(progress) + Profit
-						goal = tonumber(goal)
-
-						-- Clamp to goal
-						if progress > goal then
-							progress = goal
+					if questName and (questName == "Make Money" or questName == "The Rich") then
+						if progress and goal then
+							progress = math.min(tonumber(progress) + Profit, tonumber(goal))
+							OneTimeQuests.Value = string.format("%s:%d,%d", questName, progress, goal)
 						end
-
-						-- Update the quest string
-						OneTimeQuests.Value = string.format("%s:%d,%d", questName, progress, goal)
 					end
 				end
-				
+
 				Events.Profit:FireClient(Player, Profit)
 				Events.UpdateSellUI:FireClient(Player)
 			end
 		end
-		
+
 		if not LockedOres[Action] and OreData.Coins then
 			local SplitInventory = string.split(PlayerData.Collection.Value, ",")
 
@@ -968,23 +971,17 @@ Events.Sell.OnServerEvent:Connect(function(Player, Action)
 			PlayerData.Coins.Value += Profit
 
 			if Profit > 0 then
-				local OneTimeQuests = PlayerData:FindFirstChild("OneTimeQuests") --if Collect Ore Quest is there
-				if OneTimeQuests and string.find(OneTimeQuests.Value, "Make Money") then
+				local OneTimeQuests = PlayerData:FindFirstChild("OneTimeQuests")
+				if OneTimeQuests then
 					local questName, progress, goal = string.match(OneTimeQuests.Value, "^(.-):(%d+),(%d+)$")
-					if questName and progress and goal then
-						progress = tonumber(progress) + Profit
-						goal = tonumber(goal)
-
-						-- Clamp to goal
-						if progress > goal then
-							progress = goal
+					if questName and (questName == "Make Money" or questName == "The Rich") then
+						if progress and goal then
+							progress = math.min(tonumber(progress) + Profit, tonumber(goal))
+							OneTimeQuests.Value = string.format("%s:%d,%d", questName, progress, goal)
 						end
-
-						-- Update the quest string
-						OneTimeQuests.Value = string.format("%s:%d,%d", questName, progress, goal)
 					end
 				end
-				
+
 				Events.Profit:FireClient(Player, Profit)
 				Events.UpdateSellUI:FireClient(Player)
 			end

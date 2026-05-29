@@ -5,7 +5,7 @@ local HttpService = game:GetService("HttpService")
 local Events = ReplicatedStorage:WaitForChild("Events")
 local ItemInfo = require(ReplicatedStorage.Modules.ItemInfo)
 
-local stockLifetime = 180 -- 5 minutes (300 seconds)
+local stockLifetime = 300 -- 5 minutes
 local stockKey = "GlobalDrillLineup"
 local playerStockKeyPrefix = "DrillLimit_"
 local refreshTimestampKey = "NextDrillRefresh"
@@ -113,6 +113,15 @@ local function getCurrentGlobalLineup()
 	return available
 end
 
+local function getDefaultLineup()
+	-- Fallback: all drills are available when MemoryStore hasn't been seeded yet
+	local lineup = {}
+	for drillName in pairs(drillList) do
+		lineup[drillName] = true
+	end
+	return lineup
+end
+
 local function setupPlayerDrillLimits(player)
 	local key = playerStockKeyPrefix .. player.UserId
 	local map = MemoryStoreService:GetSortedMap("DrillLimits")
@@ -125,15 +134,20 @@ local function setupPlayerDrillLimits(player)
 	if success and json then
 		local savedLimits = HttpService:JSONDecode(json)
 
-		-- ✅ If seed matches, do NOT regenerate — use saved limits directly
 		if savedLimits._seed == currentSeed then
 			playerDrillLimits[player.UserId] = savedLimits
 			return
 		end
 	end
 
-	-- ❗ Otherwise, regenerate for new refresh
+	-- Regenerate for new refresh cycle
 	local lineup = getCurrentGlobalLineup()
+
+	-- Fallback: if MemoryStore hasn't been seeded yet, use all drills
+	if next(lineup) == nil then
+		lineup = getDefaultLineup()
+	end
+
 	local rng = Random.new(currentSeed)
 	local newLimits = {}
 

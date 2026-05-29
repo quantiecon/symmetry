@@ -217,20 +217,14 @@ local function processCollectedOres(count, DrillData, Player)
 			end
 			
 			if rarity == "Legendary" then
-				local OneTimeQuests = PlayerData:FindFirstChild("OneTimeQuests") --if Collect Ore Quest is there
-				if OneTimeQuests and string.find(OneTimeQuests.Value, "Mine a Legendary") then
+				local OneTimeQuests = PlayerData:FindFirstChild("OneTimeQuests")
+				if OneTimeQuests then
 					local questName, progress, goal = string.match(OneTimeQuests.Value, "^(.-):(%d+),(%d+)$")
-					if questName and progress and goal then
-						progress = tonumber(progress) + 1
-						goal = tonumber(goal)
-
-						-- Clamp to goal
-						if progress > goal then
-							progress = goal
+					if questName and (questName == "Mine a Legendary" or questName == "Legend Hunter") then
+						if progress and goal then
+							progress = math.min(tonumber(progress) + 1, tonumber(goal))
+							OneTimeQuests.Value = string.format("%s:%d,%d", questName, progress, goal)
 						end
-
-						-- Update the quest string
-						OneTimeQuests.Value = string.format("%s:%d,%d", questName, progress, goal)
 					end
 				end
 			end
@@ -242,20 +236,22 @@ local function processCollectedOres(count, DrillData, Player)
 		Events.GemsChanged:FireClient(Player)
 	end
 	
-	local dailyQuest = PlayerData:FindFirstChild("DailyQuests") --if Collect Ore Quest is there
+	local dailyQuest = PlayerData:FindFirstChild("DailyQuests")
 	if dailyQuest and string.find(dailyQuest.Value, "Collect Ores") then
 		local questName, progress, goal = string.match(dailyQuest.Value, "^(.-):(%d+),(%d+)$")
 		if questName and progress and goal then
-			progress = tonumber(progress) + processed
-			goal = tonumber(goal)
-
-			-- Clamp to goal
-			if progress > goal then
-				progress = goal
-			end
-
-			-- Update the quest string
+			progress = math.min(tonumber(progress) + processed, tonumber(goal))
 			dailyQuest.Value = string.format("%s:%d,%d", questName, progress, goal)
+		end
+	end
+
+	-- Main quest: Dedicated Miner (50,000 ores from drills)
+	local oneTimeQuest = PlayerData:FindFirstChild("OneTimeQuests")
+	if oneTimeQuest then
+		local questName, progress, goal = string.match(oneTimeQuest.Value, "^(.-):(%d+),(%d+)$")
+		if questName == "Dedicated Miner" and progress and goal then
+			progress = math.min(tonumber(progress) + processed, tonumber(goal))
+			oneTimeQuest.Value = string.format("%s:%d,%d", questName, progress, goal)
 		end
 	end
 	
