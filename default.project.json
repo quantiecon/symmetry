@@ -1,0 +1,61 @@
+{
+  "name": "DrillIt",
+  "tree": {
+    "$className": "DataModel",
+
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "Main":              { "$path": "src/server/Main" },
+      "OreSpawn":          { "$path": "src/server/OreSpawn" },
+      "CollectionServer":  { "$path": "src/server/CollectionServer.server.luau" },
+      "Crafting":          { "$path": "src/server/Crafting.server.luau" },
+      "DailyRewards":      { "$path": "src/server/DailyRewards.server.luau" },
+      "DataHandler":       { "$path": "src/server/DataHandler.luau" },
+      "EventServer":       { "$path": "src/server/EventServer.server.luau" },
+      "FriendReferral":    { "$path": "src/server/FriendReferral.server.luau" },
+      "Physics":           { "$path": "src/server/Physics.server.luau" },
+      "PlacementServer":   { "$path": "src/server/PlacementServer.server.luau" },
+      "Purchases":         { "$path": "src/server/Purchases.server.luau" },
+      "QuestServer":       { "$path": "src/server/QuestServer.server.luau" },
+      "Requests":          { "$path": "src/server/Requests.server.luau" },
+      "RewardHandler":     { "$path": "src/server/RewardHandler.server.luau" },
+      "ServerMessages":    { "$path": "src/server/ServerMessages.server.luau" },
+      "SprintHandler":     { "$path": "src/server/SprintHandler.server.luau" },
+      "StockHandler":      { "$path": "src/server/StockHandler.server.luau" },
+      "ToolServer":        { "$path": "src/server/ToolServer.server.luau" },
+      "TradeServer":       { "$path": "src/server/TradeServer.server.luau" },
+      "WanderingMerchant": { "$path": "src/server/WanderingMerchant.server.luau" },
+      "WeatherHandler":    { "$path": "src/server/WeatherHandler.server.luau" },
+      "WheelHandler":      { "$path": "src/server/WheelHandler.server.luau" },
+      "WorkerServer":      { "$path": "src/server/WorkerServer.server.luau" }
+    },
+
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "Modules": {
+        "$className": "Folder",
+        "BuffManager":     { "$path": "src/shared/BuffManager.luau" },
+        "CraftingRecipes": { "$path": "src/shared/CraftingRecipes.luau" },
+        "CrateChances":    { "$path": "src/shared/CrateChances.luau" },
+        "ItemInfo":        { "$path": "src/shared/ItemInfo.luau" },
+        "ProfileService":  { "$path": "src/shared/ProfileService.luau" },
+        "QuestInfo":       { "$path": "src/shared/QuestInfo.luau" },
+        "ViewportModel":   { "$path": "src/shared/ViewportModel.luau" },
+        "WorkerInfo":      { "$path": "src/shared/WorkerInfo.luau" }
+      }
+    },
+
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterCharacterScripts": {
+        "$className": "StarterCharacterScripts",
+        "SprintScript": { "$path": "src/client/SprintScript.client.luau" }
+      },
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "SkipRollButton":   { "$path": "src/client/SkipRollButton.client.luau" },
+        "IntroShopDelay":   { "$path": "src/client/IntroShopDelay.client.luau" }
+      }
+    }
+  }
+}

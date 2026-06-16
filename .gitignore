@@ -1,0 +1,17 @@
+# Roblox place/model binaries (not source — use Rojo to build these)
+*.rbxl
+*.rbxlx
+*.rbxm
+*.rbxmx
+# Exception: animation assets checked into source
+!src/shared/Animations/*.rbxm
+# Exception: child-instance models for Rojo-managed scripts
+!src/server/Main/*.rbxm
+!src/server/OreSpawn/*.rbxm
+
+# Rojo-generated sourcemap
+sourcemap.json
+
+# Rokit/Aftman project-local bin shims
+.rokit/
+.aftman/bin/
